@@ -54,6 +54,7 @@
             display: inline-block;
             position: relative;
             cursor: pointer;
+            flex-shrink: 0;
         }
         .custom-checkbox:checked {
             background-color: #0057B8;
@@ -110,45 +111,81 @@
         <!-- SMART ORGANIZER TAB -->
         <section id="tab-organizer" class="space-y-6">
             
-            <div class="bg-card p-6 rounded-xl shadow-lg border border-surface space-y-5">
-                <div class="flex flex-col md:flex-row gap-4 items-center">
-                    <label class="text-brand font-semibold md:w-1/4">Target Node (Directory)</label>
-                    <div class="flex-grow flex gap-2 w-full">
-                        <input type="text" id="dir-display" readonly placeholder="No directory linked..." class="flex-grow bg-surface border border-gray-600 text-textMain rounded-md px-4 py-2 focus:outline-none cursor-not-allowed opacity-70">
-                        <button onclick="requestDirectoryAccess()" class="bg-surface hover:bg-[#3A3A3A] border border-gray-600 px-6 py-2 rounded-md font-bold transition">Link Local Folder</button>
+            <div class="bg-card p-6 rounded-xl shadow-lg border border-surface">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    
+                    <!-- Left Column: Core Settings -->
+                    <div class="space-y-5">
+                        <div>
+                            <label class="text-brand font-semibold block mb-2">Target Node (Directory)</label>
+                            <div class="flex gap-2 w-full">
+                                <input type="text" id="dir-display" readonly placeholder="No directory linked..." class="flex-grow bg-surface border border-gray-600 text-textMain rounded-md px-4 py-2 focus:outline-none cursor-not-allowed opacity-70">
+                                <button onclick="requestDirectoryAccess()" class="bg-surface hover:bg-[#3A3A3A] border border-gray-600 px-6 py-2 rounded-md font-bold transition">Link Node</button>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="text-brand font-semibold block mb-2">Diagnostic Sample Size</label>
+                                <input type="number" id="sample-size-input" value="20" min="1" max="50" class="w-full bg-surface border border-gray-600 text-textMain rounded-md px-4 py-2 focus:outline-none focus:border-brand">
+                            </div>
+                            <div>
+                                <label class="text-brand font-semibold block mb-2">Max Category Clusters</label>
+                                <input type="number" id="max-categories-input" value="5" min="1" max="15" class="w-full bg-surface border border-gray-600 text-textMain rounded-md px-4 py-2 focus:outline-none focus:border-brand">
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="text-brand font-semibold block mb-2">Oracle Directives (Optional)</label>
+                            <input type="text" id="oracle-hint-input" placeholder="e.g., 'These are finance documents.'" class="w-full bg-surface border border-gray-600 text-textMain rounded-md px-4 py-2 focus:outline-none focus:border-brand">
+                        </div>
+
+                        <div class="flex items-center gap-3 pt-2">
+                            <input type="checkbox" id="subdirs-check" checked class="custom-checkbox">
+                            <label for="subdirs-check" class="text-brand font-semibold cursor-pointer">Deep Scan (Include Subdirectories)</label>
+                        </div>
                     </div>
-                </div>
 
-                <div class="flex flex-col md:flex-row gap-4 items-center">
-                    <label class="text-brand font-semibold md:w-1/4">Diagnostic Sample Size</label>
-                    <input type="number" id="sample-size-input" value="20" min="1" max="50" class="w-full md:w-32 bg-surface border border-gray-600 text-textMain rounded-md px-4 py-2 focus:outline-none focus:border-brand">
-                </div>
+                    <!-- Right Column: Escalation Engine Settings -->
+                    <div class="bg-surface/40 p-5 rounded-lg border border-gray-700 space-y-4">
+                        <div class="flex items-center gap-3 border-b border-gray-600 pb-4">
+                            <input type="checkbox" id="fallback-check" checked onchange="toggleFallbackUI()" class="custom-checkbox">
+                            <label for="fallback-check" class="text-brand font-semibold cursor-pointer text-lg">Escalate to Deep Analysis</label>
+                        </div>
+                        
+                        <div id="fallback-settings" class="space-y-5 pt-2 transition-opacity duration-300">
+                            <div>
+                                <label class="text-white font-semibold block mb-2 text-sm">Advanced Fallback Model (2026 Fleet)</label>
+                                <select id="fallback-model-select" class="w-full bg-[#1e1e1e] border border-gray-600 text-white rounded-md px-4 py-3 focus:outline-none focus:border-brand appearance-none cursor-pointer">
+                                    <!-- Populated via JS based on selected provider -->
+                                </select>
+                            </div>
+                            <div>
+                                <label class="text-white font-semibold block mb-2 text-sm">Certainty Threshold (%)</label>
+                                <input type="number" id="threshold-input" value="90" min="0" max="100" class="w-full bg-[#1e1e1e] border border-gray-600 text-textMain rounded-md px-4 py-3 focus:outline-none focus:border-brand">
+                            </div>
+                            <p class="text-xs text-textMuted leading-relaxed">
+                                Files classified with a confidence score below this threshold will be re-analyzed using the heavier fallback model to ensure maximum routing accuracy.
+                            </p>
+                        </div>
+                    </div>
 
-                <div class="flex flex-col md:flex-row gap-4 items-center">
-                    <label class="text-brand font-semibold md:w-1/4">Oracle Directives (Optional)</label>
-                    <input type="text" id="oracle-hint-input" placeholder="e.g., 'These are finance documents.'" class="w-full bg-surface border border-gray-600 text-textMain rounded-md px-4 py-2 focus:outline-none focus:border-brand">
-                </div>
-
-                <div class="flex items-center gap-3 mt-2">
-                    <input type="checkbox" id="subdirs-check" checked class="custom-checkbox">
-                    <label for="subdirs-check" class="text-brand font-semibold cursor-pointer">Deep Scan (Include Subdirectories)</label>
                 </div>
             </div>
 
-            <div class="flex gap-4">
-                <button onclick="runActualAnalysis()" class="bg-brand hover:bg-brandHover text-white px-8 py-3 rounded-md font-bold text-lg transition flex-grow shadow-lg">Initialize Sort Protocol</button>
-            </div>
+            <button onclick="runActualAnalysis()" id="btn-initiate" class="w-full bg-brand hover:bg-brandHover text-white px-8 py-4 rounded-md font-bold text-lg transition shadow-lg tracking-wide">
+                Initialize Sort Protocol
+            </button>
 
-            <div class="bg-card p-6 rounded-xl shadow-lg border border-surface min-h-[200px] flex flex-col items-center justify-center transition-all duration-300">
+            <!-- Dynamic Status / Approval Container -->
+            <div class="bg-card p-6 rounded-xl shadow-lg border border-surface min-h-[200px] flex flex-col items-center justify-center transition-all duration-300" id="organizer-container">
                 <p class="text-textMuted text-center w-full" id="organizer-status">System idle. Awaiting node selection.</p>
             </div>
         </section>
 
         <!-- DUPLICATE FINDER TAB -->
         <section id="tab-deduplicator" class="hidden space-y-6">
-            
             <div class="bg-card p-6 rounded-xl shadow-lg border border-surface space-y-5">
-                
                 <div class="flex items-center justify-between bg-surface p-4 rounded-md border border-gray-600">
                     <div>
                         <h3 class="font-bold text-white text-lg">Local Processing (Web Crypto)</h3>
@@ -171,7 +208,6 @@
                         <button onclick="requestDirectoryAccess()" class="bg-surface hover:bg-[#3A3A3A] border border-gray-600 px-6 py-2 rounded-md font-bold transition">Link Sector</button>
                     </div>
                 </div>
-
             </div>
 
             <button onclick="simulateScan()" class="w-full bg-brand hover:bg-brandHover text-white px-8 py-3 rounded-md font-bold text-lg transition shadow-lg">Initiate Deep Scan</button>
@@ -203,28 +239,24 @@
             </div>
 
             <div class="space-y-6">
-                <!-- Provider Selection -->
                 <div>
                     <label class="block text-sm font-semibold text-gray-300 mb-2">Select AI Provider</label>
                     <select id="api-provider" onchange="updateApiInstructions()" class="w-full bg-surface border border-gray-600 text-white rounded-md px-4 py-3 focus:outline-none focus:border-brand appearance-none">
-                        <option value="gemini">Google Gemini (Recommended - Free Tier Available)</option>
+                        <option value="gemini">Google Gemini (Default)</option>
                         <option value="openai">ChatGPT / OpenAI</option>
                         <option value="claude">Claude / Anthropic (Advanced Proxy Required)</option>
                     </select>
                 </div>
 
-                <!-- Dynamic Instructions Box -->
                 <div id="instructions-box" class="bg-surface p-4 rounded-md border border-gray-700 text-sm text-gray-300 space-y-2">
                     <!-- Populated by JS -->
                 </div>
 
-                <!-- Proxy URL (Only for Claude) -->
                 <div id="proxy-input-group" class="hidden">
                     <label class="block text-sm font-semibold text-gray-300 mb-2">Cloudflare Proxy URL</label>
                     <input type="text" id="proxy-url" placeholder="https://nexus-proxy.yourname.workers.dev" class="w-full bg-surface border border-gray-600 text-white rounded-md px-4 py-3 focus:outline-none focus:border-brand">
                 </div>
 
-                <!-- API Key Input -->
                 <div>
                     <label class="block text-sm font-semibold text-gray-300 mb-2">API Key</label>
                     <div class="relative">
@@ -244,9 +276,36 @@
     </div>
 
     <script>
-        // --- GLOBAL STATE ---
+        // --- STREAMING_CHUNK:Defining 2026 Model Architecture... ---
+        // --- GLOBAL STATE & 2026 MODELS ---
         let rootDirectoryHandle = null;
+        let isProcessing = false;
         const ORACLE_WS_URL = "wss://oracle.dadianhosted.com:8443"; 
+
+        // Current AI Landscape (Mid-2026)
+        const AI_MODELS = {
+            gemini: {
+                base: "gemini-3-flash",
+                escalation: [
+                    { id: "gemini-3.1-pro", name: "Gemini 3.1 Pro (Flagship 2026)" },
+                    { id: "gemini-3-deep-think", name: "Gemini 3 Deep Think (Max Reasoning)" }
+                ]
+            },
+            openai: {
+                base: "gpt-5.4-mini",
+                escalation: [
+                    { id: "gpt-5.5", name: "GPT-5.5 (Frontier 2026)" },
+                    { id: "gpt-5.6-sol", name: "GPT-5.6 Sol (Preview)" }
+                ]
+            },
+            claude: {
+                base: "claude-sonnet-5",
+                escalation: [
+                    { id: "claude-fable-5", name: "Claude Fable 5 (Mythos-Class)" },
+                    { id: "claude-opus-4.8", name: "Claude Opus 4.8" }
+                ]
+            }
+        };
 
         // --- UI UTILITIES ---
         function switchTab(tabId) {
@@ -264,25 +323,33 @@
             const toast = document.createElement('div');
             toast.className = `toast toast-${type}`;
             toast.innerText = message;
-            
             container.appendChild(toast);
-            
             setTimeout(() => toast.classList.add('show'), 10);
-            
             setTimeout(() => {
                 toast.classList.remove('show');
                 setTimeout(() => toast.remove(), 300);
             }, type === 'warning' || type === 'info' ? 4000 : 3000);
         }
 
-        function toggleOracleSettings() {
-            const isChecked = document.getElementById('local-process-check').checked;
-            const settingsDiv = document.getElementById('oracle-settings');
-            if (isChecked) {
-                settingsDiv.classList.add('hidden');
-            } else {
-                settingsDiv.classList.remove('hidden');
-            }
+        function toggleFallbackUI() {
+            const isChecked = document.getElementById('fallback-check').checked;
+            const settingsDiv = document.getElementById('fallback-settings');
+            settingsDiv.style.opacity = isChecked ? "1" : "0.3";
+            settingsDiv.style.pointerEvents = isChecked ? "auto" : "none";
+        }
+
+        function populateModelDropdown() {
+            const provider = localStorage.getItem('nexus_api_provider') || 'gemini';
+            const select = document.getElementById('fallback-model-select');
+            select.innerHTML = '';
+            
+            const models = AI_MODELS[provider].escalation;
+            models.forEach(model => {
+                const opt = document.createElement('option');
+                opt.value = model.id;
+                opt.textContent = model.name;
+                select.appendChild(opt);
+            });
         }
 
         // --- FILE SYSTEM ACCESS API ---
@@ -293,15 +360,101 @@
                     return;
                 }
                 rootDirectoryHandle = await window.showDirectoryPicker({ mode: 'readwrite' });
-                
                 document.getElementById('dir-display').value = `🔗 Linked: ${rootDirectoryHandle.name}`;
                 document.querySelector('#tab-deduplicator input[readonly]').value = `🔗 Linked: ${rootDirectoryHandle.name}`;
                 showToast(`Successfully linked to folder: ${rootDirectoryHandle.name}`, "success");
-
             } catch (err) {
-                if (err.name !== 'AbortError') {
-                    showToast(`Error accessing directory: ${err.message}`, "error");
+                if (err.name !== 'AbortError') showToast(`Error accessing directory: ${err.message}`, "error");
+            }
+        }
+
+        // --- STREAMING_CHUNK:Building Universal LLM Translator... ---
+        // --- UNIVERSAL LLM TRANSLATOR ---
+        async function callLLM(prompt, systemInstruction, modelName, requireJsonArray = false, requireJsonObject = false) {
+            const provider = localStorage.getItem('nexus_api_provider') || 'gemini';
+            const apiKey = localStorage.getItem('nexus_api_key');
+            const proxyUrl = localStorage.getItem('nexus_proxy_url');
+
+            if (!apiKey) throw new Error("API Key missing. Please configure AI Settings.");
+
+            if (provider === 'gemini') {
+                const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`;
+                const body = {
+                    contents: [{ parts: [{ text: prompt }] }],
+                    systemInstruction: { parts: [{ text: systemInstruction }] },
+                    generationConfig: {}
+                };
+                
+                // Enforce exact JSON schemas for Gemini 2026 models
+                if (requireJsonArray) {
+                    body.generationConfig = { responseMimeType: "application/json", responseSchema: { type: "ARRAY", items: { type: "STRING" } } };
+                } else if (requireJsonObject) {
+                    body.generationConfig = { 
+                        responseMimeType: "application/json", 
+                        responseSchema: { type: "OBJECT", properties: { category: { type: "STRING" }, confidence: { type: "INTEGER" } }, required: ["category", "confidence"] } 
+                    };
                 }
+
+                const res = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+                if (!res.ok) throw new Error(`Gemini API Error: ${res.statusText}`);
+                const data = await res.json();
+                return JSON.parse(data.candidates[0].content.parts[0].text);
+
+            } else if (provider === 'openai') {
+                const url = 'https://api.openai.com/v1/chat/completions';
+                
+                let finalSys = systemInstruction;
+                if (requireJsonArray) finalSys += " Respond ONLY with a valid JSON array of strings.";
+                if (requireJsonObject) finalSys += " Respond ONLY with a valid JSON object containing strictly 'category' (string) and 'confidence' (integer 0-100).";
+
+                const body = {
+                    model: modelName,
+                    messages: [{ role: "system", content: finalSys }, { role: "user", content: prompt }]
+                };
+                if (requireJsonArray || requireJsonObject) body.response_format = { type: "json_object" };
+
+                const res = await fetch(url, { 
+                    method: 'POST', 
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` }, 
+                    body: JSON.stringify(body) 
+                });
+                if (!res.ok) throw new Error(`OpenAI API Error: ${res.statusText}`);
+                const data = await res.json();
+                
+                let text = data.choices[0].message.content;
+                // If OpenAI wraps array in an object (due to json_object enforcement)
+                if (requireJsonArray && !text.trim().startsWith('[')) {
+                    const obj = JSON.parse(text);
+                    text = JSON.stringify(Object.values(obj)[0]);
+                }
+                return JSON.parse(text);
+
+            } else if (provider === 'claude') {
+                if (!proxyUrl) throw new Error("Claude requires a Cloudflare Proxy URL.");
+                const cleanProxy = proxyUrl.replace(/\/$/, "");
+                const url = `${cleanProxy}/v1/messages`;
+                
+                let finalPrompt = prompt;
+                if (requireJsonArray) finalPrompt += "\n\nRespond ONLY with a valid JSON array of strings. Do not include markdown blocks or conversational text.";
+                if (requireJsonObject) finalPrompt += "\n\nRespond ONLY with a valid JSON object containing strictly 'category' (string) and 'confidence' (integer 0-100). Do not include markdown blocks.";
+
+                const body = {
+                    model: modelName,
+                    system: systemInstruction,
+                    messages: [{ role: "user", content: finalPrompt }],
+                    max_tokens: 1024
+                };
+                
+                const res = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01' },
+                    body: JSON.stringify(body)
+                });
+                if (!res.ok) throw new Error(`Claude API Error: ${res.statusText}`);
+                const data = await res.json();
+                let text = data.content[0].text.trim();
+                text = text.replace(/```json\n?/g, '').replace(/```\n?/g, ''); // Strip markdown
+                return JSON.parse(text);
             }
         }
 
@@ -309,28 +462,31 @@
         // --- REAL AI PROCESSES ---
         async function runActualAnalysis() {
             if (!rootDirectoryHandle) {
-                showToast("Please link a Local Folder first.", "warning");
+                showToast("Please link a Local Node first.", "warning");
                 return;
             }
-            const apiKey = localStorage.getItem('nexus_api_key');
-            if (!apiKey) {
-                showToast("AI Engine not configured. Please open AI Settings.", "error");
-                openApiModal();
-                return;
-            }
+            if (isProcessing) return;
+            isProcessing = true;
 
-            const statusEl = document.getElementById('organizer-status');
+            const provider = localStorage.getItem('nexus_api_provider') || 'gemini';
+            const baseModel = AI_MODELS[provider].base;
+
+            const container = document.getElementById('organizer-container');
+            const initBtn = document.getElementById('btn-initiate');
+            initBtn.disabled = true;
+            initBtn.classList.add('opacity-50', 'cursor-not-allowed');
+
             const updateStatus = (msg) => {
-                statusEl.innerHTML = `
-                    <div class="flex flex-col items-center gap-4 py-8">
-                        <svg class="animate-spin h-8 w-8 text-brand" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-                        <span class="text-white font-semibold text-center">${msg}</span>
+                container.innerHTML = `
+                    <div class="flex flex-col items-center gap-4 py-8 w-full">
+                        <svg class="animate-spin h-10 w-10 text-brand" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                        <span class="text-white font-semibold text-center text-lg">${msg}</span>
                     </div>
                 `;
             };
 
             try {
-                updateStatus("Scanning local directory...");
+                updateStatus("Scanning local directory sector...");
                 let files = [];
                 
                 async function scanDir(dirHandle, path) {
@@ -345,80 +501,71 @@
                 await scanDir(rootDirectoryHandle, "");
 
                 if (files.length === 0) {
-                    statusEl.innerHTML = "<span class='text-warning font-bold'>No files found to organize.</span>";
+                    container.innerHTML = "<span class='text-warning font-bold'>No files found to organize.</span>";
+                    isProcessing = false;
+                    initBtn.disabled = false;
+                    initBtn.classList.remove('opacity-50', 'cursor-not-allowed');
                     return;
                 }
 
-                updateStatus("Reading file samples for AI context...");
+                updateStatus(`Extracting textual context from ${files.length} files...`);
                 let sampleText = "";
-                
-                const numInput = document.getElementById('sample-size-input');
-                const sampleSize = numInput ? parseInt(numInput.value) : 20;
-                
+                const sampleSize = parseInt(document.getElementById('sample-size-input').value) || 20;
                 const shuffled = files.sort(() => 0.5 - Math.random()).slice(0, sampleSize);
                 
                 for (let f of shuffled) {
                     try {
                         const file = await f.handle.getFile();
-                        if (file.size > 0 && file.size < 10000000) { 
-                            const text = await file.slice(0, 1000).text();
-                            sampleText += `\n--- File: ${f.handle.name} ---\n${text.substring(0, 500)}\n`;
+                        if (file.size > 0 && file.size < 5000000) { // Limit to 5MB files for sampling
+                            const text = await file.slice(0, 800).text();
+                            sampleText += `\n--- File: ${f.handle.name} ---\n${text.substring(0, 400)}\n`;
                         }
-                    } catch(e) { console.warn("Could not read file sample:", f.handle.name); }
+                    } catch(e) { /* Ignore unreadable files in sample */ }
                 }
 
                 let approvedCategories = [];
                 let rejectedCategories = [];
+                const maxCat = parseInt(document.getElementById('max-categories-input').value) || 5;
+                const hint = document.getElementById('oracle-hint-input').value || "General files";
+                
+                // Let's use the heavier fallback model to generate categories for better accuracy
+                const genModel = document.getElementById('fallback-check').checked 
+                                    ? document.getElementById('fallback-model-select').value 
+                                    : baseModel;
 
                 // --- The Regeneration Loop ---
                 while (approvedCategories.length === 0) {
-                    updateStatus("Querying Gemini to propose categories...");
+                    updateStatus(`Querying AI Oracle (${genModel}) for optimal clusters...`);
                     
-                    const hintInput = document.getElementById('oracle-hint-input');
-                    const hint = hintInput ? hintInput.value : "";
-                    
-                    let sysPrompt = `You are a file organizer. Context: ${hint}. Propose 2 to 6 general folder categories based on the content. Respond with a valid JSON array of strings.`;
+                    let sysPrompt = `You are a master file organizer. Context: ${hint}. Based on the diverse content provided, propose between 1 and ${maxCat} distinct, broad folder categories.`;
                     if (rejectedCategories.length > 0) {
                         sysPrompt += `\nCRITICAL RESTRICTION: The user explicitly rejected these categories: ${JSON.stringify(rejectedCategories)}. Do NOT propose them again.`;
                     }
                     
-                    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            contents: [{ parts: [{ text: "Propose categories for these files based on names and content:\n" + sampleText }] }],
-                            systemInstruction: { parts: [{ text: sysPrompt }] },
-                            generationConfig: { 
-                                responseMimeType: "application/json",
-                                responseSchema: { type: "ARRAY", items: { type: "STRING" } }
-                            }
-                        })
-                    });
-
-                    if(!response.ok) throw new Error("API Request Failed. Check your API Key.");
-                    const data = await response.json();
-                    const proposedCategories = JSON.parse(data.candidates[0].content.parts[0].text);
+                    const prompt = `Analyze content samples. Context: '${hint}'. Propose effective category names (1 to ${maxCat}).\nContent:\n${sampleText}`;
+                    
+                    const proposedCategories = await callLLM(prompt, sysPrompt, genModel, true, false);
 
                     // Render interactive checklist UI and wait for user response
                     const decision = await new Promise((resolve) => {
                         let checkboxesHTML = proposedCategories.map((cat, idx) => `
-                            <div class="flex items-center gap-3 bg-surface px-4 py-3 rounded-md border border-gray-600 w-full max-w-sm mx-auto shadow-sm">
-                                <input type="checkbox" id="cat-${idx}" value="${cat}" checked class="custom-checkbox cat-checkbox flex-shrink-0">
+                            <div class="flex items-center gap-3 bg-[#2D2D2D] px-4 py-3 rounded-md border border-gray-600 w-full shadow-sm hover:border-brand transition">
+                                <input type="checkbox" id="cat-${idx}" value="${cat}" checked class="custom-checkbox cat-checkbox">
                                 <label for="cat-${idx}" class="text-white cursor-pointer flex-grow font-medium truncate">${cat}</label>
                             </div>
                         `).join('');
 
-                        statusEl.innerHTML = `
-                            <div class="flex flex-col items-center gap-4 w-full py-4">
-                                <span class="text-brand font-bold text-lg">Proposed Clusters (Check to authorize):</span>
-                                <div class="flex flex-col gap-2 w-full px-2 max-h-64 overflow-y-auto">
+                        container.innerHTML = `
+                            <div class="flex flex-col items-center gap-4 w-full py-2">
+                                <span class="text-brand font-bold text-xl mb-2">Proposed Clusters (Check to authorize):</span>
+                                <div class="flex flex-col gap-3 w-full max-w-lg px-2 max-h-72 overflow-y-auto custom-scrollbar">
                                     ${checkboxesHTML}
                                 </div>
-                                <div class="flex flex-wrap gap-4 mt-4 justify-center w-full">
-                                    <button id="btn-approve" class="bg-[#4ade80] hover:bg-[#22c55e] text-black px-6 py-2 rounded-md font-bold transition shadow-lg">Authorize & Route Files</button>
-                                    <button id="btn-regenerate" class="bg-brand hover:bg-brandHover text-white px-6 py-2 rounded-md font-bold transition shadow-lg">Recalibrate Unchecked</button>
-                                    <button id="btn-cancel" class="bg-transparent border border-danger text-danger hover:bg-danger hover:text-white px-6 py-2 rounded-md font-bold transition">Cancel</button>
+                                <div class="flex flex-wrap gap-4 mt-6 justify-center w-full">
+                                    <button id="btn-approve" class="bg-[#4ade80] hover:bg-[#22c55e] text-black px-6 py-3 rounded-md font-bold transition shadow-lg text-lg">Authorize & Route Files</button>
+                                    <button id="btn-regenerate" class="bg-[#3A3A3A] hover:bg-[#555555] text-white px-6 py-3 rounded-md font-bold transition border border-gray-600">Recalibrate Unchecked</button>
                                 </div>
+                                <button id="btn-cancel" class="mt-2 text-danger hover:text-white transition text-sm font-semibold underline">Cancel Protocol</button>
                             </div>
                         `;
 
@@ -426,7 +573,7 @@
                             const checked = Array.from(document.querySelectorAll('.cat-checkbox:checked')).map(cb => cb.value);
                             if (checked.length === 0) {
                                 showToast("Please select at least one category to authorize.", "warning");
-                                return; // Do not resolve, wait for valid input
+                                return;
                             }
                             resolve({ action: 'approve', checked: checked });
                         };
@@ -440,61 +587,72 @@
                             resolve({ action: 'regenerate', unchecked: unchecked });
                         };
 
-                        document.getElementById('btn-cancel').onclick = () => {
-                            resolve({ action: 'cancel' });
-                        };
+                        document.getElementById('btn-cancel').onclick = () => resolve({ action: 'cancel' });
                     });
 
                     if (decision.action === 'cancel') {
-                        statusEl.innerHTML = "<span class='text-warning font-bold text-center'>Sort cancelled by user. Awaiting new instructions.</span>";
-                        return; // Stop the entire script
+                        container.innerHTML = "<span class='text-warning font-bold text-center'>Sort cancelled by user. Awaiting new instructions.</span>";
+                        isProcessing = false;
+                        initBtn.disabled = false;
+                        initBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                        return;
                     } else if (decision.action === 'regenerate') {
                         rejectedCategories.push(...decision.unchecked);
-                        // The loop will automatically continue and re-query Gemini
+                        // Loop continues
                     } else if (decision.action === 'approve') {
                         approvedCategories = decision.checked;
-                        // Loop terminates and proceeds to sorting
+                        // Loop terminates
                     }
                 }
 
-                // --- Sorting Phase ---
+                // --- Streaming File Processing Phase ---
+                const useFallback = document.getElementById('fallback-check').checked;
+                const threshold = parseInt(document.getElementById('threshold-input').value) || 90;
+                const fallbackModel = document.getElementById('fallback-model-select').value;
+                
                 let processed = 0;
                 for (let f of files) {
                     processed++;
                     updateStatus(`Sorting file ${processed} of ${files.length}: <br><span class="text-brand text-sm">${f.handle.name}</span>`);
                     
-                    const classRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            contents: [{ parts: [{ text: `Classify the file named "${f.handle.name}" into exactly ONE of these categories: ${JSON.stringify(approvedCategories)}. If it does not fit ANY of them, respond with "Uncategorized".` }] }],
-                            generationConfig: { 
-                                responseMimeType: "application/json", 
-                                responseSchema: { 
-                                    type: "OBJECT", 
-                                    properties: { category: { type: "STRING" } }, 
-                                    required: ["category"] 
-                                } 
-                            }
-                        })
-                    });
+                    const sysPromptClassify = `You are a file classifier. Context: ${hint}. Select BEST fit from: ${JSON.stringify(approvedCategories)}. If it does not fit ANY perfectly, category MUST be "Uncategorized".`;
                     
-                    let targetCategory = "Uncategorized";
-                    if(classRes.ok) {
-                        const cData = await classRes.json();
-                        const returnedCategory = JSON.parse(cData.candidates[0].content.parts[0].text).category;
-                        
-                        const lowerCategories = approvedCategories.map(c => c.toLowerCase());
-                        const matchIndex = lowerCategories.indexOf(returnedCategory.toLowerCase());
-                        
-                        if (matchIndex !== -1) {
-                            targetCategory = approvedCategories[matchIndex];
-                        } else {
-                            targetCategory = "Uncategorized";
+                    let fileTextSnippet = "";
+                    try {
+                        const file = await f.handle.getFile();
+                        if (file.size < 5000000) fileTextSnippet = await file.slice(0, 800).text();
+                    } catch(e) {}
+
+                    const promptText = `Classify this file named "${f.handle.name}" based on its metadata and snippet:\n${fileTextSnippet.substring(0, 400)}`;
+
+                    // Initial Base Evaluation
+                    let baseResult = await callLLM(promptText, sysPromptClassify, baseModel, false, true);
+                    
+                    let finalCategory = baseResult.category;
+                    let finalConfidence = parseInt(baseResult.confidence) || 0;
+
+                    // Escalation Engine
+                    if (useFallback && finalConfidence <= threshold) {
+                        updateStatus(`Escalating file ${processed} to Deep Analysis (${fallbackModel})...<br><span class="text-brand text-sm">${f.handle.name}</span>`);
+                        try {
+                            const fallbackResult = await callLLM(promptText, sysPromptClassify, fallbackModel, false, true);
+                            finalCategory = fallbackResult.category;
+                        } catch(e) {
+                            console.warn("Fallback failed, using base result.", e);
                         }
                     }
 
-                    const targetDirHandle = await rootDirectoryHandle.getDirectoryHandle(targetCategory, { create: true });
+                    // Strict validation
+                    const lowerCategories = approvedCategories.map(c => c.toLowerCase());
+                    const matchIndex = lowerCategories.indexOf(finalCategory.toLowerCase());
+                    if (matchIndex !== -1) {
+                        finalCategory = approvedCategories[matchIndex];
+                    } else {
+                        finalCategory = "Uncategorized";
+                    }
+
+                    // Move File
+                    const targetDirHandle = await rootDirectoryHandle.getDirectoryHandle(finalCategory, { create: true });
                     try {
                         if (f.handle.move) {
                             await f.handle.move(targetDirHandle, f.handle.name);
@@ -509,16 +667,20 @@
                     } catch(e) { console.error(`Move failed for ${f.handle.name}`, e); }
                 }
 
-                statusEl.innerHTML = `<span class='text-[#4ade80] font-bold text-xl text-center py-8 block'>Sort Complete! Organized ${files.length} files.</span>`;
+                container.innerHTML = `<span class='text-[#4ade80] font-bold text-2xl text-center py-8 block'>Sort Complete! Organized ${files.length} files.</span>`;
                 showToast("Organization complete!", "success");
 
             } catch (err) {
                 console.error(err);
-                statusEl.innerHTML = `<span class='text-danger font-bold text-center py-8 block'>Error: ${err.message}</span>`;
+                container.innerHTML = `<span class='text-danger font-bold text-center py-8 block'>Error: ${err.message}</span>`;
+            } finally {
+                isProcessing = false;
+                initBtn.disabled = false;
+                initBtn.classList.remove('opacity-50', 'cursor-not-allowed');
             }
         }
 
-        // --- STREAMING_CHUNK:Finalizing Mock Functions and Settings logic... ---
+        // --- DUPLICATE SIMULATION ---
         function simulateScan() {
             if (!rootDirectoryHandle) {
                 showToast("Please link a Local Sector first.", "warning");
@@ -534,7 +696,7 @@
             `;
         }
 
-        // --- API MODAL & KEY MANAGEMENT ---
+        // --- API MODAL & SETTINGS ---
         const instructions = {
             gemini: `
                 <ol class="list-decimal pl-4 space-y-1">
@@ -600,9 +762,7 @@
             modal.classList.add('opacity-0');
             content.classList.add('scale-95');
             
-            setTimeout(() => {
-                modal.classList.add('hidden');
-            }, 300); 
+            setTimeout(() => modal.classList.add('hidden'), 300); 
         }
 
         function saveApiSettings() {
@@ -614,7 +774,6 @@
                 showToast("Please enter an API key.", "error");
                 return;
             }
-
             if (provider === 'claude' && !proxy) {
                 showToast("Cloudflare Proxy URL is required for Claude.", "error");
                 return;
@@ -624,22 +783,22 @@
             localStorage.setItem('nexus_api_key', key);
             localStorage.setItem('nexus_proxy_url', proxy);
 
+            // Re-populate models based on new provider
+            populateModelDropdown();
+
             showToast("AI Configuration saved securely.", "success");
             closeApiModal();
         }
 
         function togglePassword() {
             const input = document.getElementById('api-key');
-            if (input.type === 'password') {
-                input.type = 'text';
-            } else {
-                input.type = 'password';
-            }
+            input.type = input.type === 'password' ? 'text' : 'password';
         }
 
         // Initialize UI
         document.addEventListener('DOMContentLoaded', () => {
             updateApiInstructions();
+            populateModelDropdown();
             
             if (!localStorage.getItem('nexus_api_key')) {
                 setTimeout(openApiModal, 500);
