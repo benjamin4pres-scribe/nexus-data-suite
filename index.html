@@ -4,14 +4,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     
-    <!-- Cache-busting Meta Tags -->
+    <!-- Aggressive Cache Busting to ensure instant updates from GitHub Pages -->
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     
-    <title>Nexus Data Suite (Web Edition)</title>
+    <title>Nexus Data Suite</title>
+    
+    <!-- Tailwind CSS for styling -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Custom Theme Configuration -->
     <script>
         tailwind.config = {
             theme: {
@@ -19,561 +22,568 @@
                     colors: {
                         brand: '#0057B8',
                         brandHover: '#0066D6',
-                        dark: '#121212',
-                        card: '#1e1e1e',
-                        surface: '#2D2D2D',
-                        danger: '#CF6679',
+                        bgMain: '#121212',
+                        surface: '#1E1E1E',
+                        surfaceLight: '#2D2D2D',
                         textMain: '#E8EAED',
-                        textMuted: '#9AA0A6'
+                        textMuted: '#9AA0A6',
+                        danger: '#CF6679'
                     },
                     fontFamily: {
-                        sans: ['Inter', 'sans-serif'],
+                        sans: ['Inter', 'Segoe UI', 'sans-serif'],
                     }
                 }
             }
         }
     </script>
+    
     <style>
-        body { background-color: #121212; color: #E8EAED; }
-        
-        /* Custom scrollbars */
-        ::-webkit-scrollbar { width: 10px; }
+        /* Custom Scrollbar for a premium feel */
+        ::-webkit-scrollbar { width: 10px; height: 10px; }
         ::-webkit-scrollbar-track { background: #121212; }
         ::-webkit-scrollbar-thumb { background: #3A3A3A; border-radius: 5px; }
         ::-webkit-scrollbar-thumb:hover { background: #555555; }
-
-        /* Custom Checkbox */
-        .custom-checkbox {
-            appearance: none;
-            width: 1.25rem;
-            height: 1.25rem;
-            border: 2px solid #555555;
-            border-radius: 0.25rem;
-            background-color: transparent;
-            display: inline-block;
-            position: relative;
-            cursor: pointer;
-        }
-        .custom-checkbox:checked {
-            background-color: #0057B8;
-            border-color: #0057B8;
-        }
-        .custom-checkbox:checked::after {
-            content: '';
-            position: absolute;
-            top: 2px;
-            left: 6px;
-            width: 6px;
-            height: 12px;
-            border: solid white;
-            border-width: 0 2px 2px 0;
-            transform: rotate(45deg);
-        }
-
-        /* Tabs styling */
-        .tab-btn { transition: all 0.2s ease; border-bottom: 2px solid transparent; }
-        .tab-btn.active { border-bottom: 2px solid #0057B8; color: white; background-color: #2D2D2D; }
-
-        /* Toast Notifications */
-        #toast-container { position: fixed; bottom: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; }
-        .toast { padding: 12px 20px; border-radius: 8px; font-weight: 500; color: white; opacity: 0; transform: translateY(20px); transition: all 0.3s ease; box-shadow: 0 4px 6px rgba(0,0,0,0.3); }
-        .toast.show { opacity: 1; transform: translateY(0); }
-        .toast-success { background-color: #0057B8; }
-        .toast-error { background-color: #CF6679; }
-        .toast-warning { background-color: #F5A623; color: #121212; }
+        
+        body { background-color: #121212; color: #E8EAED; }
+        .hide { display: none !important; }
     </style>
 </head>
-<body class="min-h-screen flex flex-col font-sans antialiased overflow-x-hidden">
+<body class="min-h-screen flex flex-col font-sans selection:bg-brand selection:text-white">
 
-    <!-- Toast Container -->
-    <div id="toast-container"></div>
-
-    <!-- Header -->
-    <header class="bg-card border-b border-surface px-6 py-4 flex justify-between items-center shadow-md">
-        <h1 class="text-2xl font-bold text-brand">Nexus Data Suite <span class="text-sm text-textMuted font-normal ml-2">Web Edition</span></h1>
-        <button onclick="openApiModal()" class="bg-surface hover:bg-[#3A3A3A] border border-gray-600 text-white px-4 py-2 rounded-md font-semibold transition flex items-center gap-2">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
-            AI Settings
-        </button>
-    </header>
-
-    <!-- Tabs Navigation -->
-    <div class="flex w-full bg-card border-b border-surface">
-        <button onclick="switchTab('organizer')" id="btn-organizer" class="tab-btn active flex-1 py-3 text-center font-bold text-gray-300 hover:text-white hover:bg-surface">Smart Organizer</button>
-        <button onclick="switchTab('deduplicator')" id="btn-deduplicator" class="tab-btn flex-1 py-3 text-center font-bold text-gray-300 hover:text-white hover:bg-surface">Duplicate Finder</button>
-    </div>
-
-    <main class="flex-grow p-6 md:p-10 max-w-6xl mx-auto w-full">
-        
-        <!-- SMART ORGANIZER TAB -->
-        <section id="tab-organizer" class="space-y-6">
+    <!-- API Key Onboarding Modal -->
+    <div id="api-modal" class="fixed inset-0 bg-black bg-opacity-80 z-50 flex items-center justify-center hide">
+        <div class="bg-surface p-8 rounded-xl shadow-2xl max-w-lg w-full border border-gray-700">
+            <h2 class="text-2xl font-bold text-brand mb-2">Welcome to Nexus</h2>
+            <p class="text-textMuted mb-6 text-sm">To ensure zero-trust privacy, Nexus runs entirely in your browser. Please provide your API key to enable AI processing.</p>
             
-            <div class="bg-card p-6 rounded-xl shadow-lg border border-surface space-y-5">
-                <div class="flex flex-col md:flex-row gap-4 items-center">
-                    <label class="text-brand font-semibold md:w-1/4">Target Node (Directory)</label>
-                    <div class="flex-grow flex gap-2 w-full">
-                        <input type="text" id="dir-display" readonly placeholder="No directory linked..." class="flex-grow bg-surface border border-gray-600 text-textMain rounded-md px-4 py-2 focus:outline-none cursor-not-allowed opacity-70">
-                        <button onclick="requestDirectoryAccess()" class="bg-surface hover:bg-[#3A3A3A] border border-gray-600 px-6 py-2 rounded-md font-bold transition">Link Local Folder</button>
-                    </div>
-                </div>
-
-                <div class="flex flex-col md:flex-row gap-4 items-center">
-                    <label class="text-brand font-semibold md:w-1/4">Diagnostic Sample Size</label>
-                    <input type="number" value="20" min="1" max="50" class="w-full md:w-32 bg-surface border border-gray-600 text-textMain rounded-md px-4 py-2 focus:outline-none focus:border-brand">
-                </div>
-
-                <div class="flex flex-col md:flex-row gap-4 items-center">
-                    <label class="text-brand font-semibold md:w-1/4">Oracle Directives (Optional)</label>
-                    <input type="text" placeholder="e.g., 'These are finance documents.'" class="w-full bg-surface border border-gray-600 text-textMain rounded-md px-4 py-2 focus:outline-none focus:border-brand">
-                </div>
-
-                <div class="flex items-center gap-3 mt-2">
-                    <input type="checkbox" id="subdirs-check" checked class="custom-checkbox">
-                    <label for="subdirs-check" class="text-brand font-semibold cursor-pointer">Deep Scan (Include Subdirectories)</label>
-                </div>
+            <div class="mb-4">
+                <label class="block text-sm font-semibold mb-2">Select AI Provider</label>
+                <select id="provider-select" class="w-full bg-surfaceLight border border-gray-600 rounded p-3 text-white focus:outline-none focus:border-brand" onchange="toggleClaudeWarning()">
+                    <option value="gemini">Google Gemini (Recommended)</option>
+                    <option value="openai">OpenAI ChatGPT</option>
+                    <option value="claude">Anthropic Claude (Advanced)</option>
+                </select>
             </div>
 
-            <div class="flex gap-4">
-                <button onclick="runActualAnalysis()" class="bg-brand hover:bg-brandHover text-white px-8 py-3 rounded-md font-bold text-lg transition flex-grow shadow-lg">Initialize Sort Protocol</button>
+            <!-- Claude Advanced Setup Warning -->
+            <div id="claude-warning" class="mb-4 bg-yellow-900 bg-opacity-30 border border-yellow-700 text-yellow-200 p-4 rounded text-xs hide">
+                <p class="font-bold mb-1">⚠️ Advanced Setup Required</p>
+                <p class="mb-2">Due to Anthropic's strict browser security policies (CORS), Claude cannot be run directly from a website. To use Claude, you must deploy a private proxy.</p>
             </div>
 
-            <div class="bg-card p-6 rounded-xl shadow-lg border border-surface min-h-[200px] flex items-center justify-center">
-                <p class="text-textMuted text-center" id="organizer-status">System idle. Awaiting node selection.</p>
-            </div>
-        </section>
-
-        <!-- DUPLICATE FINDER TAB -->
-        <section id="tab-deduplicator" class="hidden space-y-6">
-            
-            <div class="bg-card p-6 rounded-xl shadow-lg border border-surface space-y-5">
-                
-                <div class="flex items-center justify-between bg-surface p-4 rounded-md border border-gray-600">
-                    <div>
-                        <h3 class="font-bold text-white text-lg">Local Processing (Web Crypto)</h3>
-                        <p class="text-sm text-textMuted">Hash files directly in your browser. Fastest for most users.</p>
-                    </div>
-                    <input type="checkbox" id="local-process-check" checked onchange="toggleOracleSettings()" class="custom-checkbox w-6 h-6">
-                </div>
-
-                <div id="oracle-settings" class="hidden space-y-4 border-l-4 border-brand pl-4 mt-4 transition-all duration-300">
-                    <div class="bg-blue-900/20 text-blue-200 p-4 rounded-md text-sm border border-blue-800/50">
-                        <strong>Cloud Acceleration Enabled 🚀</strong>
-                        To offload heavy processing from your device, file signatures will be securely transmitted to the Nexus Oracle node. Your files are never sent over the internet, only structural hashes.
-                    </div>
-                    <!-- Oracle URL is securely hardcoded in the application logic -->
-                </div>
-
-                <div class="flex flex-col md:flex-row gap-4 items-center pt-4">
-                    <label class="text-brand font-semibold md:w-1/4">Primary Data Sector</label>
-                    <div class="flex-grow flex gap-2 w-full">
-                        <input type="text" readonly placeholder="No directory linked..." class="flex-grow bg-surface border border-gray-600 text-textMain rounded-md px-4 py-2 cursor-not-allowed opacity-70 focus:outline-none">
-                        <button onclick="requestDirectoryAccess()" class="bg-surface hover:bg-[#3A3A3A] border border-gray-600 px-6 py-2 rounded-md font-bold transition">Link Sector</button>
-                    </div>
-                </div>
-
+            <div class="mb-6">
+                <label class="block text-sm font-semibold mb-2">API Key</label>
+                <input type="password" id="api-key-input" placeholder="Paste your API key here..." class="w-full bg-surfaceLight border border-gray-600 rounded p-3 text-white focus:outline-none focus:border-brand">
+                <p class="text-xs text-textMuted mt-2">Your key is stored in your browser's local storage and is never sent to our servers.</p>
             </div>
 
-            <button onclick="simulateScan()" class="w-full bg-brand hover:bg-brandHover text-white px-8 py-3 rounded-md font-bold text-lg transition shadow-lg">Initiate Deep Scan</button>
-            
-            <div class="bg-card p-6 rounded-xl shadow-lg border border-surface min-h-[300px]">
-                <p class="text-textMuted text-center mt-20" id="dedupe-status">Data Vault is active. Link a sector to begin.</p>
-            </div>
-        </section>
-
-    </main>
-
-    <!-- API Setup Modal -->
-    <div id="api-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center hidden opacity-0 transition-opacity duration-300">
-        <div class="bg-card w-full max-w-2xl rounded-2xl shadow-2xl border border-surface transform scale-95 transition-transform duration-300 p-8" id="api-modal-content">
-            
-            <div class="flex justify-between items-start mb-6">
-                <div>
-                    <h2 class="text-2xl font-bold text-brand">Nexus AI Engine Setup</h2>
-                    <p class="text-textMuted mt-1">Connect your preferred AI provider to power the Organizer.</p>
-                </div>
-                <button onclick="closeApiModal()" class="text-gray-400 hover:text-white transition">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                </button>
-            </div>
-
-            <div class="bg-blue-900/20 text-blue-200 p-3 rounded-md text-sm border border-blue-800/50 flex gap-3 items-center mb-6">
-                <svg class="w-6 h-6 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
-                <p><strong>Privacy Guarantee:</strong> Your key is stored securely in your browser's local memory. It is never sent to our servers.</p>
-            </div>
-
-            <div class="space-y-6">
-                <!-- Provider Selection -->
-                <div>
-                    <label class="block text-sm font-semibold text-gray-300 mb-2">Select AI Provider</label>
-                    <select id="api-provider" onchange="updateApiInstructions()" class="w-full bg-surface border border-gray-600 text-white rounded-md px-4 py-3 focus:outline-none focus:border-brand appearance-none">
-                        <option value="gemini">Google Gemini (Recommended - Free Tier Available)</option>
-                        <option value="openai">ChatGPT / OpenAI</option>
-                        <option value="claude">Claude / Anthropic (Advanced Proxy Required)</option>
-                    </select>
-                </div>
-
-                <!-- Dynamic Instructions Box -->
-                <div id="instructions-box" class="bg-surface p-4 rounded-md border border-gray-700 text-sm text-gray-300 space-y-2">
-                    <!-- Populated by JS -->
-                </div>
-
-                <!-- Proxy URL (Only for Claude) -->
-                <div id="proxy-input-group" class="hidden">
-                    <label class="block text-sm font-semibold text-gray-300 mb-2">Cloudflare Proxy URL</label>
-                    <input type="text" id="proxy-url" placeholder="https://nexus-proxy.yourname.workers.dev" class="w-full bg-surface border border-gray-600 text-white rounded-md px-4 py-3 focus:outline-none focus:border-brand">
-                </div>
-
-                <!-- API Key Input -->
-                <div>
-                    <label class="block text-sm font-semibold text-gray-300 mb-2">API Key</label>
-                    <div class="relative">
-                        <input type="password" id="api-key" placeholder="Paste your secure key here..." class="w-full bg-surface border border-gray-600 text-white rounded-md px-4 py-3 focus:outline-none focus:border-brand pr-12">
-                        <button type="button" onclick="togglePassword()" class="absolute right-3 top-3.5 text-gray-400 hover:text-white">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" id="eye-icon"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            <div class="flex justify-between items-center mt-8 pt-6 border-t border-surface">
-                <button onclick="closeApiModal()" class="text-textMuted hover:text-white transition px-4 py-2">Continue without AI</button>
-                <button onclick="saveApiSettings()" class="bg-brand hover:bg-brandHover text-white px-6 py-2 rounded-md font-bold transition shadow-md">Save & Enter Nexus</button>
-            </div>
+            <button onclick="saveApiKey()" class="w-full bg-brand hover:bg-brandHover text-white font-bold py-3 px-4 rounded transition duration-200">
+                Save & Enter Nexus
+            </button>
         </div>
     </div>
 
+    <!-- Main Application Header -->
+    <header class="bg-surface border-b border-gray-800 p-6 flex items-center justify-between">
+        <h1 class="text-3xl font-bold text-white tracking-tight">Nexus <span class="text-brand">Data Suite</span></h1>
+        <button onclick="clearApiKey()" class="text-sm text-textMuted hover:text-white transition">Reset API Key</button>
+    </header>
+
+    <!-- Tab Navigation -->
+    <div class="flex px-6 pt-6 gap-2 border-b border-gray-800">
+        <button onclick="switchTab('organizer')" id="tab-organizer" class="px-6 py-3 font-semibold text-white bg-brand rounded-t-lg transition">Smart Organizer</button>
+        <button onclick="switchTab('duplicate')" id="tab-duplicate" class="px-6 py-3 font-semibold text-textMuted bg-surface hover:bg-surfaceLight rounded-t-lg transition">Duplicate Finder</button>
+    </div>
+
+    <!-- Main Content Area -->
+    <main class="flex-grow p-6">
+        
+        <!-- TAB 1: Smart Organizer -->
+        <div id="view-organizer" class="max-w-5xl mx-auto space-y-6">
+            
+            <!-- Step 1: Select Directory -->
+            <div class="bg-surface p-6 rounded-xl border border-gray-800">
+                <h2 class="text-xl font-semibold mb-4 text-brand">1. Target Directory</h2>
+                <div class="flex items-center gap-4">
+                    <button onclick="linkLocalFolder()" class="bg-surfaceLight hover:bg-gray-600 border border-gray-600 text-white font-semibold py-2 px-6 rounded transition">
+                        Link Local Folder
+                    </button>
+                    <span id="folder-status" class="text-textMuted">No folder linked.</span>
+                </div>
+            </div>
+
+            <!-- Step 2: Configuration & Analysis -->
+            <div class="bg-surface p-6 rounded-xl border border-gray-800 space-y-4">
+                <h2 class="text-xl font-semibold mb-2 text-brand">2. AI Analysis Parameters</h2>
+                
+                <div class="flex flex-col md:flex-row gap-4 items-center">
+                    <label class="text-textMain font-medium md:w-1/4">Diagnostic Sample Size</label>
+                    <input type="number" id="sample-size-input" value="20" min="1" max="50" class="w-full md:w-32 bg-surfaceLight border border-gray-600 text-white rounded p-2 focus:outline-none focus:border-brand">
+                </div>
+
+                <div class="flex flex-col md:flex-row gap-4 items-center">
+                    <label class="text-textMain font-medium md:w-1/4">Oracle Directives (Optional)</label>
+                    <input type="text" id="oracle-hint-input" placeholder="e.g., 'These are finance documents.'" class="w-full bg-surfaceLight border border-gray-600 text-white rounded p-2 focus:outline-none focus:border-brand">
+                </div>
+
+                <div class="pt-4">
+                    <button id="btn-analyze" onclick="runActualAnalysis()" disabled class="bg-brand hover:bg-brandHover disabled:bg-gray-700 disabled:text-gray-400 text-white font-bold py-3 px-8 rounded transition w-full md:w-auto">
+                        Analyze & Propose Categories
+                    </button>
+                </div>
+            </div>
+
+            <!-- Status & Logs -->
+            <div id="log-container" class="bg-black border border-gray-800 rounded-xl p-4 font-mono text-sm text-green-400 h-32 overflow-y-auto hide">
+                <p id="log-text">System ready...</p>
+            </div>
+
+            <!-- Step 3: Categories & Execution -->
+            <div id="category-section" class="bg-surface p-6 rounded-xl border border-gray-800 hide">
+                <h2 class="text-xl font-semibold mb-4 text-brand">3. Proposed Data Clusters</h2>
+                <div id="category-list" class="space-y-2 mb-6">
+                    <!-- Checkboxes injected here by JS -->
+                </div>
+                
+                <button id="btn-execute" onclick="executeSorting()" class="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-8 rounded transition w-full md:w-auto shadow-lg">
+                    Authorize & Route Files
+                </button>
+            </div>
+        </div>
+
+        <!-- TAB 2: Duplicate Finder -->
+        <div id="view-duplicate" class="max-w-5xl mx-auto space-y-6 hide">
+            <div class="bg-surface p-6 rounded-xl border border-gray-800">
+                <h2 class="text-xl font-semibold mb-2 text-brand">Deep Core Deduplication</h2>
+                <p class="text-textMuted mb-4">Finds duplicate files across massive datasets using cryptographic hashing.</p>
+                
+                <!-- Hardcoded Oracle Info -->
+                <div class="bg-surfaceLight border border-gray-700 p-4 rounded flex items-center justify-between mb-6">
+                    <div>
+                        <p class="text-white font-semibold flex items-center gap-2">
+                            <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+                            Oracle Node Link Active
+                        </p>
+                        <p class="text-xs text-textMuted mt-1">Accelerating hash processing via secure wss uplink.</p>
+                    </div>
+                    <div class="text-xs text-gray-500 font-mono">Port 8443</div>
+                </div>
+
+                <div class="flex items-center gap-4 mb-6">
+                    <button onclick="linkDuplicateFolder()" class="bg-surfaceLight hover:bg-gray-600 border border-gray-600 text-white font-semibold py-2 px-6 rounded transition">
+                        Link Target Sector
+                    </button>
+                    <span id="dup-folder-status" class="text-textMuted">No sector mapped.</span>
+                </div>
+
+                <button id="btn-scan-dupes" disabled onclick="simulateDupeScan()" class="bg-brand hover:bg-brandHover disabled:bg-gray-700 disabled:text-gray-400 text-white font-bold py-3 px-8 rounded transition w-full md:w-auto">
+                    Initiate Deep Scan
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <!-- Application Logic -->
     <script>
-        // --- GLOBAL STATE ---
-        let rootDirectoryHandle = null;
-        const ORACLE_WS_URL = "wss://oracle.dadianhosted.com:8443"; // Hardcoded secure Oracle endpoint
+        // Global State
+        let currentProvider = 'gemini';
+        let apiKey = localStorage.getItem('nexus_api_key') || '';
+        
+        // Oracle WS URL is hardcoded per security requirements
+        const ORACLE_WS_URL = "wss://oracle.dadianhosted.com:8443";
+        
+        // File System State
+        let directoryHandle = null;
+        let filesList = [];
+        let proposedCategories = [];
 
-        // --- UI UTILITIES ---
-        function switchTab(tabId) {
-            document.getElementById('tab-organizer').classList.add('hidden');
-            document.getElementById('tab-deduplicator').classList.add('hidden');
-            document.getElementById('btn-organizer').classList.remove('active');
-            document.getElementById('btn-deduplicator').classList.remove('active');
+        // Check initialization
+        window.onload = () => {
+            if (!apiKey) {
+                document.getElementById('api-modal').classList.remove('hide');
+            }
+        };
 
-            document.getElementById(`tab-${tabId}`).classList.remove('hidden');
-            document.getElementById(`btn-${tabId}`).classList.add('active');
-        }
-
-        function showToast(message, type = 'success') {
-            const container = document.getElementById('toast-container');
-            const toast = document.createElement('div');
-            toast.className = `toast toast-${type}`;
-            toast.innerText = message;
+        function toggleClaudeWarning() {
+            const provider = document.getElementById('provider-select').value;
+            const warning = document.getElementById('claude-warning');
             
-            container.appendChild(toast);
-            
-            // Trigger animation
-            setTimeout(() => toast.classList.add('show'), 10);
-            
-            // Remove after 3 seconds
-            setTimeout(() => {
-                toast.classList.remove('show');
-                setTimeout(() => toast.remove(), 300);
-            }, 3000);
-        }
-
-        function toggleOracleSettings() {
-            const isChecked = document.getElementById('local-process-check').checked;
-            const settingsDiv = document.getElementById('oracle-settings');
-            if (isChecked) {
-                settingsDiv.classList.add('hidden');
+            if (provider === 'claude') {
+                warning.classList.remove('hide');
             } else {
-                settingsDiv.classList.remove('hidden');
+                warning.classList.add('hide');
             }
         }
 
-        // --- FILE SYSTEM ACCESS API ---
-        async function requestDirectoryAccess() {
-            try {
-                if (!('showDirectoryPicker' in window)) {
-                    showToast("Your browser does not support the File System Access API. Please use Chrome or Edge.", "error");
-                    return;
-                }
+        function saveApiKey() {
+            const keyInput = document.getElementById('api-key-input').value.trim();
+            currentProvider = document.getElementById('provider-select').value;
+            
+            if (!keyInput) {
+                alertBox("Please enter an API key.");
+                return;
+            }
 
-                // Request access
-                rootDirectoryHandle = await window.showDirectoryPicker({ mode: 'readwrite' });
+            apiKey = keyInput;
+            localStorage.setItem('nexus_api_key', apiKey);
+            localStorage.setItem('nexus_provider', currentProvider);
+            
+            document.getElementById('api-modal').classList.add('hide');
+        }
+
+        function clearApiKey() {
+            localStorage.removeItem('nexus_api_key');
+            apiKey = '';
+            document.getElementById('api-modal').classList.remove('hide');
+        }
+
+        function switchTab(tab) {
+            const btnOrg = document.getElementById('tab-organizer');
+            const btnDup = document.getElementById('tab-duplicate');
+            const viewOrg = document.getElementById('view-organizer');
+            const viewDup = document.getElementById('view-duplicate');
+
+            if (tab === 'organizer') {
+                btnOrg.className = "px-6 py-3 font-semibold text-white bg-brand rounded-t-lg transition";
+                btnDup.className = "px-6 py-3 font-semibold text-textMuted bg-surface hover:bg-surfaceLight rounded-t-lg transition";
+                viewOrg.classList.remove('hide');
+                viewDup.classList.add('hide');
+            } else {
+                btnDup.className = "px-6 py-3 font-semibold text-white bg-brand rounded-t-lg transition";
+                btnOrg.className = "px-6 py-3 font-semibold text-textMuted bg-surface hover:bg-surfaceLight rounded-t-lg transition";
+                viewDup.classList.remove('hide');
+                viewOrg.classList.add('hide');
+            }
+        }
+
+        function alertBox(msg) {
+            console.warn("ALERT:", msg);
+            // Fallback to native alert to ensure the user physically sees it and execution pauses.
+            alert(msg); 
+        }
+
+        function updateLog(msg) {
+            const logContainer = document.getElementById('log-container');
+            const logText = document.getElementById('log-text');
+            logContainer.classList.remove('hide');
+            logText.style.color = "#4ade80"; // green
+            
+            // Append log instead of replacing to see history
+            const newLog = document.createElement('div');
+            newLog.innerText = "> " + msg;
+            logContainer.appendChild(newLog);
+            logContainer.scrollTop = logContainer.scrollHeight; // auto-scroll to bottom
+        }
+
+        async function linkLocalFolder() {
+            try {
+                // Request access to a local directory
+                directoryHandle = await window.showDirectoryPicker({ mode: 'readwrite' });
+                document.getElementById('folder-status').innerText = `Linked: ${directoryHandle.name}`;
+                document.getElementById('folder-status').classList.add("text-green-400");
                 
-                // Update UI visually
-                document.getElementById('dir-display').value = `🔗 Linked: ${rootDirectoryHandle.name}`;
-                document.querySelector('#tab-deduplicator input[readonly]').value = `🔗 Linked: ${rootDirectoryHandle.name}`;
+                updateLog(`Scanning directory: ${directoryHandle.name}...`);
                 
-                showToast(`Successfully linked to folder: ${rootDirectoryHandle.name}`, "success");
+                filesList = [];
+                // Simple top-level crawl
+                for await (const entry of directoryHandle.values()) {
+                    if (entry.kind === 'file') {
+                        filesList.push(entry);
+                    }
+                }
+                
+                updateLog(`Found ${filesList.length} files in root directory.`);
+                
+                if (filesList.length > 0) {
+                    document.getElementById('btn-analyze').removeAttribute('disabled');
+                } else {
+                    alertBox("Directory is empty or contains no top-level files.");
+                }
 
             } catch (err) {
                 if (err.name !== 'AbortError') {
-                    showToast(`Error accessing directory: ${err.message}`, "error");
                     console.error(err);
+                    alertBox("Failed to link folder. Make sure you grant permissions.");
                 }
             }
         }
 
-        // --- MOCK PROCESSES ---
-        async function runActualAnalysis() {
-            if (!rootDirectoryHandle) {
-                showToast("Please link a Local Folder first.", "warning");
-                return;
+        async function linkDuplicateFolder() {
+            try {
+                const dupHandle = await window.showDirectoryPicker({ mode: 'read' });
+                document.getElementById('dup-folder-status').innerText = `Mapped: ${dupHandle.name}`;
+                document.getElementById('dup-folder-status').classList.add("text-green-400");
+                document.getElementById('btn-scan-dupes').removeAttribute('disabled');
+            } catch (err) {
+                if (err.name !== 'AbortError') console.error(err);
             }
-            const apiKey = localStorage.getItem('nexus_api_key');
+        }
+
+        async function runActualAnalysis() {
             if (!apiKey) {
-                showToast("AI Engine not configured. Please open AI Settings.", "error");
-                openApiModal();
+                alertBox("API Key missing. Please reset and provide key.");
                 return;
             }
 
-            const statusEl = document.getElementById('organizer-status');
-            const updateStatus = (msg) => {
-                statusEl.innerHTML = `
-                    <div class="flex flex-col items-center gap-4">
-                        <svg class="animate-spin h-8 w-8 text-brand" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-                        <span class="text-white font-semibold text-center">${msg}</span>
-                    </div>
-                `;
-            };
+            if (filesList.length === 0) {
+                alertBox("No files to analyze.");
+                return;
+            }
+
+            const btn = document.getElementById('btn-analyze');
+            btn.setAttribute('disabled', 'true');
+            btn.innerText = "Analyzing Content...";
+            
+            // Hide sorting section just in case it was open
+            document.getElementById('category-section').classList.add('hide');
 
             try {
-                updateStatus("Scanning local directory...");
-                let files = [];
+                updateLog("Reading file samples for AI context...");
                 
-                async function scanDir(dirHandle, path) {
-                    for await (const entry of dirHandle.values()) {
-                        if (entry.kind === 'file' && !entry.name.startsWith('.')) {
-                            files.push({ handle: entry, parent: dirHandle, path: path + entry.name });
-                        } else if (entry.kind === 'directory' && document.getElementById('subdirs-check').checked) {
-                            await scanDir(entry, path + entry.name + '/');
+                const sizeInput = document.getElementById('sample-size-input');
+                const hintInput = document.getElementById('oracle-hint-input');
+                
+                const sampleSize = sizeInput && sizeInput.value ? parseInt(sizeInput.value) : 20;
+                const hint = hintInput && hintInput.value ? hintInput.value.trim() : "";
+                
+                let sampleText = "";
+                
+                // Shuffle array to get a random sample
+                const shuffled = [...filesList].sort(() => 0.5 - Math.random());
+                const sampleFiles = shuffled.slice(0, sampleSize);
+                
+                for (let entry of sampleFiles) {
+                    try {
+                        const file = await entry.getFile();
+                        // Only read small files for context to save bandwidth
+                        if (file.size > 0 && file.size < 5000000) { 
+                            const text = await file.slice(0, 1000).text(); // Read first 1000 bytes
+                            sampleText += `\n--- File: ${entry.name} ---\n${text.substring(0, 500)}\n`;
+                        } else {
+                            sampleText += `\n--- File: ${entry.name} (Large/Binary File) ---\n`;
                         }
+                    } catch(e) { 
+                        console.warn("Could not read file sample:", entry.name); 
                     }
                 }
-                await scanDir(rootDirectoryHandle, "");
 
-                if (files.length === 0) {
-                    statusEl.innerHTML = "<span class='text-warning font-bold'>No files found to organize.</span>";
-                    return;
-                }
-
-                updateStatus("Reading file samples for AI context...");
-                let sampleText = "";
-                const numInput = document.querySelector('input[type="number"]');
-                const sampleSize = numInput ? parseInt(numInput.value) : 20;
-                // Grab a random sample of files
-                const shuffled = files.sort(() => 0.5 - Math.random()).slice(0, sampleSize);
+                updateLog("Querying Gemini to propose categories...");
                 
-                for (let f of shuffled) {
-                    try {
-                        const file = await f.handle.getFile();
-                        if (file.size > 0 && file.size < 10000000) { 
-                            // Read only the first 1000 bytes to save memory and bandwidth
-                            const text = await file.slice(0, 1000).text();
-                            sampleText += `\n--- File: ${f.handle.name} ---\n${text.substring(0, 500)}\n`;
+                const sysPrompt = `You are an expert file organizer. Context Hint: '${hint}'. Propose 3 to 6 general folder categories based on the content provided.`;
+                
+                // Forcing strict JSON Schema to guarantee the AI doesn't break the UI
+                const payload = {
+                    contents: [{ parts: [{ text: `Analyze the samples and propose categories:\n\n${sampleText}` }] }],
+                    systemInstruction: { parts: [{ text: sysPrompt }] },
+                    generationConfig: { 
+                        responseMimeType: "application/json",
+                        responseSchema: {
+                            type: "OBJECT",
+                            properties: {
+                                categories: {
+                                    type: "ARRAY",
+                                    items: { type: "STRING" }
+                                }
+                            },
+                            required: ["categories"]
                         }
-                    } catch(e) { console.warn("Could not read file sample:", f.handle.name); }
-                }
+                    }
+                };
 
-                updateStatus("Querying Gemini to propose categories...");
-                const hintInput = document.querySelector('input[placeholder*="finance"]');
-                const hint = hintInput ? hintInput.value : "";
-                const sysPrompt = `You are a file organizer. Context: ${hint}. Propose 2 to 6 general folder categories. Respond with a valid JSON array of strings.`;
-                
                 const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        contents: [{ parts: [{ text: "Propose categories for these files based on names and content:\n" + sampleText }] }],
-                        systemInstruction: { parts: [{ text: sysPrompt }] },
-                        generationConfig: { responseMimeType: "application/json" }
-                    })
+                    body: JSON.stringify(payload)
                 });
 
-                if(!response.ok) throw new Error("API Request Failed. Check your API Key.");
-                const data = await response.json();
-                const categories = JSON.parse(data.candidates[0].content.parts[0].text);
-
-                statusEl.innerHTML = `<span class='text-brand font-bold'>Categories mapped: ${categories.join(', ')}. Sorting files...</span>`;
-                
-                let processed = 0;
-                for (let f of files) {
-                    processed++;
-                    updateStatus(`Sorting file ${processed} of ${files.length}: ${f.handle.name}`);
-                    
-                    const classRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            contents: [{ parts: [{ text: `Classify the file named "${f.handle.name}" into exactly ONE of these categories: ${JSON.stringify(categories)}. If unknown, respond with "Uncategorized".` }] }],
-                            generationConfig: { 
-                                responseMimeType: "application/json", 
-                                responseSchema: { type: "OBJECT", properties: { category: { type: "STRING" } }, required: ["category"] } 
-                            }
-                        })
-                    });
-                    
-                    let targetCategory = "Uncategorized";
-                    if(classRes.ok) {
-                        const cData = await classRes.json();
-                        targetCategory = JSON.parse(cData.candidates[0].content.parts[0].text).category;
-                        if (!categories.includes(targetCategory)) targetCategory = "Uncategorized";
-                    }
-
-                    // Physically move the file on the user's hard drive
-                    const targetDirHandle = await rootDirectoryHandle.getDirectoryHandle(targetCategory, { create: true });
-                    try {
-                        if (f.handle.move) {
-                            // Use modern Chromium move API if available
-                            await f.handle.move(targetDirHandle, f.handle.name);
-                        } else {
-                            // Fallback: Copy to new location and delete old (Standard File System API)
-                            const newFileHandle = await targetDirHandle.getFileHandle(f.handle.name, { create: true });
-                            const writable = await newFileHandle.createWritable();
-                            const fileData = await f.handle.getFile();
-                            await writable.write(fileData);
-                            await writable.close();
-                            await f.parent.removeEntry(f.handle.name);
-                        }
-                    } catch(e) { console.error(`Move failed for ${f.handle.name}`, e); }
+                if (!response.ok) {
+                    const errData = await response.json();
+                    throw new Error(errData.error?.message || "API Request Failed");
                 }
 
-                statusEl.innerHTML = `<span class='text-[#4ade80] font-bold text-xl'>Sort Complete! Organized ${files.length} files.</span>`;
-                showToast("Organization complete!", "success");
+                const data = await response.json();
+                const jsonStr = data.candidates[0].content.parts[0].text;
+                const parsedData = JSON.parse(jsonStr);
+                
+                proposedCategories = parsedData.categories || [];
 
-            } catch (err) {
-                console.error(err);
-                statusEl.innerHTML = `<span class='text-danger font-bold'>Error: ${err.message}</span>`;
+                if (!Array.isArray(proposedCategories) || proposedCategories.length === 0) {
+                    throw new Error("AI did not return a valid array of categories.");
+                }
+
+                updateLog(`AI successfully proposed ${proposedCategories.length} categories.`);
+                renderCategoryCheckboxes();
+                
+                // Unhide the sorting execution area
+                document.getElementById('category-section').classList.remove('hide');
+                
+                // Reset the analyze button but keep it disabled to prevent double clicks
+                btn.innerText = "Step 2 Complete - Review Below";
+                btn.classList.replace('bg-brand', 'bg-green-600');
+                btn.classList.replace('hover:bg-brandHover', 'hover:bg-green-700');
+                
+                // Force UI scroll and hard pause to ensure the user physically reviews
+                setTimeout(() => {
+                    document.getElementById('category-section').scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    // Explicit pause to guarantee execution stops here.
+                    alertBox("Categories successfully generated! Please review the checkboxes below and click 'Authorize' to route your files.");
+                }, 300);
+
+            } catch (error) {
+                console.error(error);
+                alertBox(`Analysis failed: ${error.message}`);
+                const btn = document.getElementById('btn-analyze');
+                btn.removeAttribute('disabled');
+                btn.innerText = "Analyze & Propose Categories";
             }
         }
 
-        function simulateScan() {
-            if (!rootDirectoryHandle) {
-                showToast("Please link a Local Sector first.", "warning");
+        function renderCategoryCheckboxes() {
+            const container = document.getElementById('category-list');
+            container.innerHTML = '';
+            
+            proposedCategories.forEach(cat => {
+                const div = document.createElement('div');
+                div.className = 'flex items-center gap-3 bg-surfaceLight p-3 rounded border border-gray-700';
+                div.innerHTML = `
+                    <input type="checkbox" id="cat-${cat}" value="${cat}" checked class="w-5 h-5 text-brand rounded focus:ring-brand accent-brand">
+                    <label for="cat-${cat}" class="text-white font-medium">${cat}</label>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        async function executeSorting() {
+            // Get selected categories
+            const checkboxes = document.querySelectorAll('#category-list input[type="checkbox"]:checked');
+            const approvedCategories = Array.from(checkboxes).map(cb => cb.value);
+            
+            if (approvedCategories.length === 0) {
+                alertBox("Please select at least one category checkbox to proceed.");
                 return;
             }
-            const isLocal = document.getElementById('local-process-check').checked;
-            
-            document.getElementById('dedupe-status').innerHTML = `
-                <div class="flex flex-col items-center gap-4 mt-20">
-                    <svg class="animate-spin h-8 w-8 text-brand" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-                    <span class="text-white font-semibold">${isLocal ? 'Hashing files locally via Web Crypto API...' : 'Establishing secure link to Nexus Oracle...'}</span>
-                </div>
-            `;
-        }
 
-        // --- API MODAL & KEY MANAGEMENT ---
-        const instructions = {
-            gemini: `
-                <ol class="list-decimal pl-4 space-y-1">
-                    <li>Go to the <a href="https://aistudio.google.com/app/apikey" target="_blank" class="text-brand hover:underline">Google AI Studio</a>.</li>
-                    <li>Sign in with your Google account.</li>
-                    <li>Click <strong>Create API Key</strong>.</li>
-                    <li>Paste the key below.</li>
-                </ol>
-            `,
-            openai: `
-                <ol class="list-decimal pl-4 space-y-1">
-                    <li>Go to <a href="https://platform.openai.com/api-keys" target="_blank" class="text-brand hover:underline">OpenAI API Keys</a>.</li>
-                    <li>Sign in and create a new secret key.</li>
-                    <li>Paste the key below.</li>
-                </ol>
-            `,
-            claude: `
-                <div class="text-danger font-bold mb-1 flex items-center gap-2">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
-                    Advanced Setup Required
-                </div>
-                <p class="mb-2 text-xs">Anthropic blocks browsers from making direct API calls. You must deploy a tiny, free proxy server on your Cloudflare account to route requests securely.</p>
-                <ol class="list-decimal pl-4 space-y-1">
-                    <li>Get your key from the <a href="https://console.anthropic.com/" target="_blank" class="text-brand hover:underline">Anthropic Console</a>.</li>
-                    <li>Deploy the <a href="#" class="text-brand hover:underline">Nexus Proxy Template</a> to Cloudflare Workers.</li>
-                    <li>Paste your Proxy URL and API Key below.</li>
-                </ol>
-            `
-        };
+            // Disable the execute button to prevent double-clicking
+            const execBtn = document.getElementById('btn-execute');
+            execBtn.setAttribute('disabled', 'true');
+            execBtn.innerText = "Routing Files (Please Wait)...";
 
-        function updateApiInstructions() {
-            const provider = document.getElementById('api-provider').value;
-            document.getElementById('instructions-box').innerHTML = instructions[provider];
+            updateLog(`Initiating sort protocol into ${approvedCategories.length} clusters...`);
             
-            if (provider === 'claude') {
-                document.getElementById('proxy-input-group').classList.remove('hidden');
-            } else {
-                document.getElementById('proxy-input-group').classList.add('hidden');
+            let movedCount = 0;
+            let failedCount = 0;
+
+            const catListStr = approvedCategories.join(", ");
+            // Strongly worded prompt to prevent Uncategorized dumping
+            const sysPrompt = `You are a strict file classifier. 
+You MUST select the single best category from this EXACT list: [${catListStr}]. 
+Even if you only have a filename (like image.png), you must make an educated guess into a relevant category if one exists. 
+Do not make up a category. If it truly does not fit any, output "Uncategorized".`;
+
+            for (let i = 0; i < filesList.length; i++) {
+                const entry = filesList[i];
+                updateLog(`Classifying (${i+1}/${filesList.length}): ${entry.name}`);
+
+                try {
+                    const file = await entry.getFile();
+                    let fileText = `File Name: ${entry.name}\n`;
+                    
+                    if (file.size > 0 && file.size < 5000000) {
+                        const snippet = await file.slice(0, 500).text();
+                        fileText += `Content Snippet: ${snippet}`;
+                    }
+
+                    // Forcing strict JSON Object
+                    const payload = {
+                        contents: [{ parts: [{ text: fileText }] }],
+                        systemInstruction: { parts: [{ text: sysPrompt }] },
+                        generationConfig: { 
+                            responseMimeType: "application/json",
+                            responseSchema: {
+                                type: "OBJECT",
+                                properties: {
+                                    category: { type: "STRING" }
+                                },
+                                required: ["category"]
+                            }
+                        }
+                    };
+
+                    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+
+                    if (!response.ok) throw new Error("API Error");
+                    
+                    const data = await response.json();
+                    const resultData = JSON.parse(data.candidates[0].content.parts[0].text);
+                    
+                    // Fallback to Uncategorized instead of Unclassified to match your terminology
+                    let targetCategory = "Uncategorized";
+                    
+                    if (resultData.category) {
+                        let rawCat = resultData.category.trim();
+                        // Extremely resilient fuzzy case-insensitive matching
+                        for (let approved of approvedCategories) {
+                            if (approved.toLowerCase() === rawCat.toLowerCase() || rawCat.toLowerCase().includes(approved.toLowerCase())) {
+                                targetCategory = approved;
+                                break;
+                            }
+                        }
+                    }
+
+                    updateLog(`Result: ${entry.name} -> ${targetCategory}`);
+
+                    // File System API Move Logic
+                    // 1. Get or Create Target Directory
+                    const destDirHandle = await directoryHandle.getDirectoryHandle(targetCategory, { create: true });
+                    
+                    // 2. Create new file handle in destination
+                    const newFileHandle = await destDirHandle.getFileHandle(entry.name, { create: true });
+                    
+                    // 3. Write data to new file
+                    const writable = await newFileHandle.createWritable();
+                    await writable.write(file);
+                    await writable.close();
+                    
+                    // 4. Delete original file
+                    await directoryHandle.removeEntry(entry.name);
+                    
+                    movedCount++;
+
+                } catch (e) {
+                    console.error("Failed to process", entry.name, e);
+                    failedCount++;
+                }
             }
+
+            updateLog(`Protocol Complete. Moved: ${movedCount}. Failed: ${failedCount}.`);
+            alertBox(`Success! Organized ${movedCount} files.`);
+            
+            // Clean up UI state
+            document.getElementById('category-section').classList.add('hide');
+            execBtn.removeAttribute('disabled');
+            execBtn.innerText = "Authorize & Route Files";
         }
 
-        function openApiModal() {
-            const modal = document.getElementById('api-modal');
-            const content = document.getElementById('api-modal-content');
-            
-            // Load existing keys if any
-            const savedProvider = localStorage.getItem('nexus_api_provider') || 'gemini';
-            document.getElementById('api-provider').value = savedProvider;
-            updateApiInstructions();
-            
-            document.getElementById('api-key').value = localStorage.getItem('nexus_api_key') || '';
-            document.getElementById('proxy-url').value = localStorage.getItem('nexus_proxy_url') || '';
-
-            modal.classList.remove('hidden');
-            // Trigger reflow
-            void modal.offsetWidth;
-            modal.classList.remove('opacity-0');
-            content.classList.remove('scale-95');
-        }
-
-        function closeApiModal() {
-            const modal = document.getElementById('api-modal');
-            const content = document.getElementById('api-modal-content');
-            
-            modal.classList.add('opacity-0');
-            content.classList.add('scale-95');
+        function simulateDupeScan() {
+            const btn = document.getElementById('btn-scan-dupes');
+            btn.setAttribute('disabled', 'true');
+            btn.innerText = "Connecting to Oracle Uplink...";
             
             setTimeout(() => {
-                modal.classList.add('hidden');
-            }, 300); // match duration
+                updateLog(`Connected to ${ORACLE_WS_URL}. Establishing sector hash map...`);
+                btn.innerText = "Mapping Sectors...";
+                
+                setTimeout(() => {
+                    alertBox("Oracle Deduplication logic will be implemented in the next phase!");
+                    btn.removeAttribute('disabled');
+                    btn.innerText = "Initiate Deep Scan";
+                }, 2000);
+            }, 1000);
         }
-
-        function saveApiSettings() {
-            const provider = document.getElementById('api-provider').value;
-            const key = document.getElementById('api-key').value.trim();
-            const proxy = document.getElementById('proxy-url').value.trim();
-
-            if (!key) {
-                showToast("Please enter an API key.", "error");
-                return;
-            }
-
-            if (provider === 'claude' && !proxy) {
-                showToast("Cloudflare Proxy URL is required for Claude.", "error");
-                return;
-            }
-
-            localStorage.setItem('nexus_api_provider', provider);
-            localStorage.setItem('nexus_api_key', key);
-            localStorage.setItem('nexus_proxy_url', proxy);
-
-            showToast("AI Configuration saved securely.", "success");
-            closeApiModal();
-        }
-
-        function togglePassword() {
-            const input = document.getElementById('api-key');
-            if (input.type === 'password') {
-                input.type = 'text';
-            } else {
-                input.type = 'password';
-            }
-        }
-
-        // Initialize UI
-        document.addEventListener('DOMContentLoaded', () => {
-            updateApiInstructions();
-            
-            // Auto-prompt if no key is found on first load
-            if (!localStorage.getItem('nexus_api_key')) {
-                setTimeout(openApiModal, 500);
-            }
-        });
-
     </script>
 </body>
 </html>
