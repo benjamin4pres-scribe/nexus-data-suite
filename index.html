@@ -14,7 +14,7 @@
     <!-- Tailwind CSS for styling -->
     <script src="https://cdn.tailwindcss.com"></script>
     
-    <!-- Custom Theme Configuration -->
+    <!-- Custom Theme Configuration (Original Deep Blue Aesthetic) -->
     <script>
         tailwind.config = {
             theme: {
@@ -197,8 +197,11 @@
         let filesList = [];
         let proposedCategories = [];
 
-        // Check initialization
+        // Check initialization and browser support
         window.onload = () => {
+            if (!window.showDirectoryPicker) {
+                alertBox("Warning: Your browser does not support the local File System API. Please use Google Chrome or Microsoft Edge on a desktop device.");
+            }
             if (!apiKey) {
                 document.getElementById('api-modal').classList.remove('hide');
             }
@@ -258,26 +261,22 @@
 
         function alertBox(msg) {
             console.warn("ALERT:", msg);
-            // Fallback to native alert to ensure the user physically sees it and execution pauses.
-            alert(msg); 
+            alert(msg); // Native alert to physically pause the browser thread
         }
 
         function updateLog(msg) {
             const logContainer = document.getElementById('log-container');
-            const logText = document.getElementById('log-text');
             logContainer.classList.remove('hide');
-            logText.style.color = "#4ade80"; // green
             
-            // Append log instead of replacing to see history
             const newLog = document.createElement('div');
             newLog.innerText = "> " + msg;
             logContainer.appendChild(newLog);
-            logContainer.scrollTop = logContainer.scrollHeight; // auto-scroll to bottom
+            logContainer.scrollTop = logContainer.scrollHeight; 
         }
 
         async function linkLocalFolder() {
             try {
-                // Request access to a local directory
+                // Request access to a local directory (Read/Write required for Organizer)
                 directoryHandle = await window.showDirectoryPicker({ mode: 'readwrite' });
                 document.getElementById('folder-status').innerText = `Linked: ${directoryHandle.name}`;
                 document.getElementById('folder-status').classList.add("text-green-400");
@@ -285,7 +284,7 @@
                 updateLog(`Scanning directory: ${directoryHandle.name}...`);
                 
                 filesList = [];
-                // Simple top-level crawl
+                // Top-level crawl
                 for await (const entry of directoryHandle.values()) {
                     if (entry.kind === 'file') {
                         filesList.push(entry);
@@ -303,13 +302,14 @@
             } catch (err) {
                 if (err.name !== 'AbortError') {
                     console.error(err);
-                    alertBox("Failed to link folder. Make sure you grant permissions.");
+                    alertBox("Failed to link folder. Make sure you grant read/write permissions.");
                 }
             }
         }
 
         async function linkDuplicateFolder() {
             try {
+                // Duplicate finder only needs read access initially
                 const dupHandle = await window.showDirectoryPicker({ mode: 'read' });
                 document.getElementById('dup-folder-status').innerText = `Mapped: ${dupHandle.name}`;
                 document.getElementById('dup-folder-status').classList.add("text-green-400");
@@ -334,12 +334,13 @@
             btn.setAttribute('disabled', 'true');
             btn.innerText = "Analyzing Content...";
             
-            // Hide sorting section just in case it was open
+            // Hide sorting section just in case it was open from a previous run
             document.getElementById('category-section').classList.add('hide');
 
             try {
                 updateLog("Reading file samples for AI context...");
                 
+                // Get values safely by ID
                 const sizeInput = document.getElementById('sample-size-input');
                 const hintInput = document.getElementById('oracle-hint-input');
                 
@@ -357,7 +358,7 @@
                         const file = await entry.getFile();
                         // Only read small files for context to save bandwidth
                         if (file.size > 0 && file.size < 5000000) { 
-                            const text = await file.slice(0, 1000).text(); // Read first 1000 bytes
+                            const text = await file.slice(0, 1000).text(); 
                             sampleText += `\n--- File: ${entry.name} ---\n${text.substring(0, 500)}\n`;
                         } else {
                             sampleText += `\n--- File: ${entry.name} (Large/Binary File) ---\n`;
@@ -367,11 +368,11 @@
                     }
                 }
 
-                updateLog("Querying Gemini to propose categories...");
+                updateLog("Querying Gemini to propose categories (Enforcing strict JSON Schema)...");
                 
                 const sysPrompt = `You are an expert file organizer. Context Hint: '${hint}'. Propose 3 to 6 general folder categories based on the content provided.`;
                 
-                // Forcing strict JSON Schema to guarantee the AI doesn't break the UI
+                // Force strict JSON Schema so Gemini CANNOT return conversational text
                 const payload = {
                     contents: [{ parts: [{ text: `Analyze the samples and propose categories:\n\n${sampleText}` }] }],
                     systemInstruction: { parts: [{ text: sysPrompt }] },
@@ -403,8 +404,9 @@
 
                 const data = await response.json();
                 const jsonStr = data.candidates[0].content.parts[0].text;
-                const parsedData = JSON.parse(jsonStr);
                 
+                // Parse the guaranteed JSON object
+                const parsedData = JSON.parse(jsonStr);
                 proposedCategories = parsedData.categories || [];
 
                 if (!Array.isArray(proposedCategories) || proposedCategories.length === 0) {
@@ -425,8 +427,8 @@
                 // Force UI scroll and hard pause to ensure the user physically reviews
                 setTimeout(() => {
                     document.getElementById('category-section').scrollIntoView({ behavior: 'smooth', block: 'start' });
-                    // Explicit pause to guarantee execution stops here.
-                    alertBox("Categories successfully generated! Please review the checkboxes below and click 'Authorize' to route your files.");
+                    // Explicit pause to guarantee execution stops here and does not auto-route.
+                    alertBox("Categories successfully generated! Please review the checkboxes below and click 'Authorize & Route Files' when ready.");
                 }, 300);
 
             } catch (error) {
@@ -454,7 +456,7 @@
         }
 
         async function executeSorting() {
-            // Get selected categories
+            // Get selected categories from the checkboxes
             const checkboxes = document.querySelectorAll('#category-list input[type="checkbox"]:checked');
             const approvedCategories = Array.from(checkboxes).map(cb => cb.value);
             
@@ -463,7 +465,7 @@
                 return;
             }
 
-            // Disable the execute button to prevent double-clicking
+            // Disable the execute button to prevent double-clicking during operations
             const execBtn = document.getElementById('btn-execute');
             execBtn.setAttribute('disabled', 'true');
             execBtn.innerText = "Routing Files (Please Wait)...";
@@ -477,7 +479,7 @@
             // Strongly worded prompt to prevent Uncategorized dumping
             const sysPrompt = `You are a strict file classifier. 
 You MUST select the single best category from this EXACT list: [${catListStr}]. 
-Even if you only have a filename (like image.png), you must make an educated guess into a relevant category if one exists. 
+Even if you only have a filename (like image.png) and no readable content, you must make an educated guess into a relevant category if one exists. 
 Do not make up a category. If it truly does not fit any, output "Uncategorized".`;
 
             for (let i = 0; i < filesList.length; i++) {
@@ -489,11 +491,15 @@ Do not make up a category. If it truly does not fit any, output "Uncategorized".
                     let fileText = `File Name: ${entry.name}\n`;
                     
                     if (file.size > 0 && file.size < 5000000) {
-                        const snippet = await file.slice(0, 500).text();
-                        fileText += `Content Snippet: ${snippet}`;
+                        try {
+                            const snippet = await file.slice(0, 500).text();
+                            fileText += `Content Snippet: ${snippet}`;
+                        } catch (e) {
+                            fileText += `(Content unreadable - classify by filename)`;
+                        }
                     }
 
-                    // Forcing strict JSON Object
+                    // Forcing strict JSON Object for classification
                     const payload = {
                         contents: [{ parts: [{ text: fileText }] }],
                         systemInstruction: { parts: [{ text: sysPrompt }] },
@@ -520,7 +526,7 @@ Do not make up a category. If it truly does not fit any, output "Uncategorized".
                     const data = await response.json();
                     const resultData = JSON.parse(data.candidates[0].content.parts[0].text);
                     
-                    // Fallback to Uncategorized instead of Unclassified to match your terminology
+                    // Fallback to Uncategorized instead of Unclassified
                     let targetCategory = "Uncategorized";
                     
                     if (resultData.category) {
