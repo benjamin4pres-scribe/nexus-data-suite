@@ -152,13 +152,9 @@
                 <div id="oracle-settings" class="hidden space-y-4 border-l-4 border-brand pl-4 mt-4 transition-all duration-300">
                     <div class="bg-blue-900/20 text-blue-200 p-4 rounded-md text-sm border border-blue-800/50">
                         <strong>Cloud Acceleration Enabled 🚀</strong>
-                        To offload heavy processing from your device, file signatures will be transmitted to our dedicated Oracle node. Your files are never sent over the internet, only structural hashes.
+                        To offload heavy processing from your device, file signatures will be securely transmitted to the Nexus Oracle node. Your files are never sent over the internet, only structural hashes.
                     </div>
-                    <div class="flex gap-4 items-center">
-                        <label class="text-brand font-semibold whitespace-nowrap">Oracle WebSockets IP:</label>
-                        <input type="text" placeholder="ws://192.168.1.100:5555" class="w-full bg-surface border border-gray-600 text-textMain rounded-md px-4 py-2 focus:outline-none focus:border-brand">
-                        <button class="bg-surface hover:bg-[#3A3A3A] border border-gray-600 px-6 py-2 rounded-md font-bold transition whitespace-nowrap">Test Link</button>
-                    </div>
+                    <!-- Oracle URL is securely hardcoded in the application logic -->
                 </div>
 
                 <div class="flex flex-col md:flex-row gap-4 items-center pt-4">
@@ -243,6 +239,7 @@
     <script>
         // --- GLOBAL STATE ---
         let rootDirectoryHandle = null;
+        const ORACLE_WS_URL = "wss://oracle.dadianhosted.com:8443"; // Hardcoded secure Oracle endpoint
 
         // --- UI UTILITIES ---
         function switchTab(tabId) {
@@ -343,7 +340,7 @@
             document.getElementById('dedupe-status').innerHTML = `
                 <div class="flex flex-col items-center gap-4 mt-20">
                     <svg class="animate-spin h-8 w-8 text-brand" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-                    <span class="text-white font-semibold">${isLocal ? 'Hashing files locally via Web Crypto API...' : 'Transmitting chunks to Remote Oracle...'}</span>
+                    <span class="text-white font-semibold">${isLocal ? 'Hashing files locally via Web Crypto API...' : 'Establishing secure link to Nexus Oracle...'}</span>
                 </div>
             `;
         }
