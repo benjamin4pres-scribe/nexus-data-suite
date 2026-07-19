@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nexus Data Suite (Web Edition)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: '#0057B8',
+                        brandHover: '#0066D6',
+                        dark: '#121212',
+                        card: '#1e1e1e',
+                        surface: '#2D2D2D',
+                        danger: '#CF6679',
+                        textMain: '#E8EAED',
+                        textMuted: '#9AA0A6'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { background-color: #121212; color: #E8EAED; }
+        
+        /* Custom scrollbars */
+        ::-webkit-scrollbar { width: 10px; }
+        ::-webkit-scrollbar-track { background: #121212; }
+        ::-webkit-scrollbar-thumb { background: #3A3A3A; border-radius: 5px; }
+        ::-webkit-scrollbar-thumb:hover { background: #555555; }
+
+        /* Custom Checkbox */
+        .custom-checkbox {
+            appearance: none;
+            width: 1.25rem;
+            height: 1.25rem;
+            border: 2px solid #555555;
+            border-radius: 0.25rem;
+            background-color: transparent;
+            display: inline-block;
+            position: relative;
+            cursor: pointer;
+        }
+        .custom-checkbox:checked {
+            background-color: #0057B8;
+            border-color: #0057B8;
+        }
+        .custom-checkbox:checked::after {
+            content: '';
+            position: absolute;
+            top: 2px;
+            left: 6px;
+            width: 6px;
+            height: 12px;
+            border: solid white;
+            border-width: 0 2px 2px 0;
+            transform: rotate(45deg);
+        }
+
+        /* Tabs styling */
+        .tab-btn { transition: all 0.2s ease; border-bottom: 2px solid transparent; }
+        .tab-btn.active { border-bottom: 2px solid #0057B8; color: white; background-color: #2D2D2D; }
+
+        /* Toast Notifications */
+        #toast-container { position: fixed; bottom: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; }
+        .toast { padding: 12px 20px; border-radius: 8px; font-weight: 500; color: white; opacity: 0; transform: translateY(20px); transition: all 0.3s ease; box-shadow: 0 4px 6px rgba(0,0,0,0.3); }
+        .toast.show { opacity: 1; transform: translateY(0); }
+        .toast-success { background-color: #0057B8; }
+        .toast-error { background-color: #CF6679; }
+        .toast-warning { background-color: #F5A623; color: #121212; }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col font-sans antialiased overflow-x-hidden">
+
+    <!-- Toast Container -->
+    <div id="toast-container"></div>
+
+    <!-- Header -->
+    <header class="bg-card border-b border-surface px-6 py-4 flex justify-between items-center shadow-md">
+        <h1 class="text-2xl font-bold text-brand">Nexus Data Suite <span class="text-sm text-textMuted font-normal ml-2">Web Edition</span></h1>
+        <button onclick="openApiModal()" class="bg-surface hover:bg-[#3A3A3A] border border-gray-600 text-white px-4 py-2 rounded-md font-semibold transition flex items-center gap-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+            AI Settings
+        </button>
+    </header>
+
+    <!-- Tabs Navigation -->
+    <div class="flex w-full bg-card border-b border-surface">
+        <button onclick="switchTab('organizer')" id="btn-organizer" class="tab-btn active flex-1 py-3 text-center font-bold text-gray-300 hover:text-white hover:bg-surface">Smart Organizer</button>
+        <button onclick="switchTab('deduplicator')" id="btn-deduplicator" class="tab-btn flex-1 py-3 text-center font-bold text-gray-300 hover:text-white hover:bg-surface">Duplicate Finder</button>
+    </div>
+
+    <main class="flex-grow p-6 md:p-10 max-w-6xl mx-auto w-full">
+        
+        <!-- SMART ORGANIZER TAB -->
+        <section id="tab-organizer" class="space-y-6">
+            
+            <div class="bg-card p-6 rounded-xl shadow-lg border border-surface space-y-5">
+                <div class="flex flex-col md:flex-row gap-4 items-center">
+                    <label class="text-brand font-semibold md:w-1/4">Target Node (Directory)</label>
+                    <div class="flex-grow flex gap-2 w-full">
+                        <input type="text" id="dir-display" readonly placeholder="No directory linked..." class="flex-grow bg-surface border border-gray-600 text-textMain rounded-md px-4 py-2 focus:outline-none cursor-not-allowed opacity-70">
+                        <button onclick="requestDirectoryAccess()" class="bg-surface hover:bg-[#3A3A3A] border border-gray-600 px-6 py-2 rounded-md font-bold transition">Link Local Folder</button>
+                    </div>
+                </div>
+
+                <div class="flex flex-col md:flex-row gap-4 items-center">
+                    <label class="text-brand font-semibold md:w-1/4">Diagnostic Sample Size</label>
+                    <input type="number" value="20" min="1" max="50" class="w-full md:w-32 bg-surface border border-gray-600 text-textMain rounded-md px-4 py-2 focus:outline-none focus:border-brand">
+                </div>
+
+                <div class="flex flex-col md:flex-row gap-4 items-center">
+                    <label class="text-brand font-semibold md:w-1/4">Oracle Directives (Optional)</label>
+                    <input type="text" placeholder="e.g., 'These are finance documents.'" class="w-full bg-surface border border-gray-600 text-textMain rounded-md px-4 py-2 focus:outline-none focus:border-brand">
+                </div>
+
+                <div class="flex items-center gap-3 mt-2">
+                    <input type="checkbox" id="subdirs-check" checked class="custom-checkbox">
+                    <label for="subdirs-check" class="text-brand font-semibold cursor-pointer">Deep Scan (Include Subdirectories)</label>
+                </div>
+            </div>
+
+            <div class="flex gap-4">
+                <button onclick="simulateAnalysis()" class="bg-brand hover:bg-brandHover text-white px-8 py-3 rounded-md font-bold text-lg transition flex-grow shadow-lg">Initialize Sort Protocol</button>
+            </div>
+
+            <div class="bg-card p-6 rounded-xl shadow-lg border border-surface min-h-[200px] flex items-center justify-center">
+                <p class="text-textMuted text-center" id="organizer-status">System idle. Awaiting node selection.</p>
+            </div>
+        </section>
+
+        <!-- DUPLICATE FINDER TAB -->
+        <section id="tab-deduplicator" class="hidden space-y-6">
+            
+            <div class="bg-card p-6 rounded-xl shadow-lg border border-surface space-y-5">
+                
+                <div class="flex items-center justify-between bg-surface p-4 rounded-md border border-gray-600">
+                    <div>
+                        <h3 class="font-bold text-white text-lg">Local Processing (Web Crypto)</h3>
+                        <p class="text-sm text-textMuted">Hash files directly in your browser. Fastest for most users.</p>
+                    </div>
+                    <input type="checkbox" id="local-process-check" checked onchange="toggleOracleSettings()" class="custom-checkbox w-6 h-6">
+                </div>
+
+                <div id="oracle-settings" class="hidden space-y-4 border-l-4 border-brand pl-4 mt-4 transition-all duration-300">
+                    <div class="bg-blue-900/20 text-blue-200 p-4 rounded-md text-sm border border-blue-800/50">
+                        <strong>Cloud Acceleration Enabled 🚀</strong>
+                        To offload heavy processing from your device, file signatures will be transmitted to your dedicated Oracle node. Your files are never sent over the internet, only structural hashes.
+                    </div>
+                    <div class="flex gap-4 items-center">
+                        <label class="text-brand font-semibold whitespace-nowrap">Oracle WebSockets IP:</label>
+                        <input type="text" placeholder="ws://192.168.1.100:5555" class="w-full bg-surface border border-gray-600 text-textMain rounded-md px-4 py-2 focus:outline-none focus:border-brand">
+                        <button class="bg-surface hover:bg-[#3A3A3A] border border-gray-600 px-6 py-2 rounded-md font-bold transition whitespace-nowrap">Test Link</button>
+                    </div>
+                </div>
+
+                <div class="flex flex-col md:flex-row gap-4 items-center pt-4">
+                    <label class="text-brand font-semibold md:w-1/4">Primary Data Sector</label>
+                    <div class="flex-grow flex gap-2 w-full">
+                        <input type="text" readonly placeholder="No directory linked..." class="flex-grow bg-surface border border-gray-600 text-textMain rounded-md px-4 py-2 cursor-not-allowed opacity-70 focus:outline-none">
+                        <button onclick="requestDirectoryAccess()" class="bg-surface hover:bg-[#3A3A3A] border border-gray-600 px-6 py-2 rounded-md font-bold transition">Link Sector</button>
+                    </div>
+                </div>
+
+            </div>
+
+            <button onclick="simulateScan()" class="w-full bg-brand hover:bg-brandHover text-white px-8 py-3 rounded-md font-bold text-lg transition shadow-lg">Initiate Deep Scan</button>
+            
+            <div class="bg-card p-6 rounded-xl shadow-lg border border-surface min-h-[300px]">
+                <p class="text-textMuted text-center mt-20" id="dedupe-status">Data Vault is active. Link a sector to begin.</p>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- API Setup Modal -->
+    <div id="api-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center hidden opacity-0 transition-opacity duration-300">
+        <div class="bg-card w-full max-w-2xl rounded-2xl shadow-2xl border border-surface transform scale-95 transition-transform duration-300 p-8" id="api-modal-content">
+            
+            <div class="flex justify-between items-start mb-6">
+                <div>
+                    <h2 class="text-2xl font-bold text-brand">Nexus AI Engine Setup</h2>
+                    <p class="text-textMuted mt-1">Connect your preferred AI provider to power the Organizer.</p>
+                </div>
+                <button onclick="closeApiModal()" class="text-gray-400 hover:text-white transition">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+
+            <div class="bg-blue-900/20 text-blue-200 p-3 rounded-md text-sm border border-blue-800/50 flex gap-3 items-center mb-6">
+                <svg class="w-6 h-6 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+                <p><strong>Privacy Guarantee:</strong> Your key is stored securely in your browser's local memory. It is never sent to our servers.</p>
+            </div>
+
+            <div class="space-y-6">
+                <!-- Provider Selection -->
+                <div>
+                    <label class="block text-sm font-semibold text-gray-300 mb-2">Select AI Provider</label>
+                    <select id="api-provider" onchange="updateApiInstructions()" class="w-full bg-surface border border-gray-600 text-white rounded-md px-4 py-3 focus:outline-none focus:border-brand appearance-none">
+                        <option value="gemini">Google Gemini (Recommended - Free Tier Available)</option>
+                        <option value="openai">ChatGPT / OpenAI</option>
+                        <option value="claude">Claude / Anthropic (Advanced Proxy Required)</option>
+                    </select>
+                </div>
+
+                <!-- Dynamic Instructions Box -->
+                <div id="instructions-box" class="bg-surface p-4 rounded-md border border-gray-700 text-sm text-gray-300 space-y-2">
+                    <!-- Populated by JS -->
+                </div>
+
+                <!-- Proxy URL (Only for Claude) -->
+                <div id="proxy-input-group" class="hidden">
+                    <label class="block text-sm font-semibold text-gray-300 mb-2">Cloudflare Proxy URL</label>
+                    <input type="text" id="proxy-url" placeholder="https://nexus-proxy.yourname.workers.dev" class="w-full bg-surface border border-gray-600 text-white rounded-md px-4 py-3 focus:outline-none focus:border-brand">
+                </div>
+
+                <!-- API Key Input -->
+                <div>
+                    <label class="block text-sm font-semibold text-gray-300 mb-2">API Key</label>
+                    <div class="relative">
+                        <input type="password" id="api-key" placeholder="Paste your secure key here..." class="w-full bg-surface border border-gray-600 text-white rounded-md px-4 py-3 focus:outline-none focus:border-brand pr-12">
+                        <button type="button" onclick="togglePassword()" class="absolute right-3 top-3.5 text-gray-400 hover:text-white">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" id="eye-icon"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex justify-between items-center mt-8 pt-6 border-t border-surface">
+                <button onclick="closeApiModal()" class="text-textMuted hover:text-white transition px-4 py-2">Continue without AI</button>
+                <button onclick="saveApiSettings()" class="bg-brand hover:bg-brandHover text-white px-6 py-2 rounded-md font-bold transition shadow-md">Save & Enter Nexus</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- GLOBAL STATE ---
+        let rootDirectoryHandle = null;
+
+        // --- UI UTILITIES ---
+        function switchTab(tabId) {
+            document.getElementById('tab-organizer').classList.add('hidden');
+            document.getElementById('tab-deduplicator').classList.add('hidden');
+            document.getElementById('btn-organizer').classList.remove('active');
+            document.getElementById('btn-deduplicator').classList.remove('active');
+
+            document.getElementById(`tab-${tabId}`).classList.remove('hidden');
+            document.getElementById(`btn-${tabId}`).classList.add('active');
+        }
+
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `toast toast-${type}`;
+            toast.innerText = message;
+            
+            container.appendChild(toast);
+            
+            // Trigger animation
+            setTimeout(() => toast.classList.add('show'), 10);
+            
+            // Remove after 3 seconds
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        function toggleOracleSettings() {
+            const isChecked = document.getElementById('local-process-check').checked;
+            const settingsDiv = document.getElementById('oracle-settings');
+            if (isChecked) {
+                settingsDiv.classList.add('hidden');
+            } else {
+                settingsDiv.classList.remove('hidden');
+            }
+        }
+
+        // --- FILE SYSTEM ACCESS API ---
+        async function requestDirectoryAccess() {
+            try {
+                if (!('showDirectoryPicker' in window)) {
+                    showToast("Your browser does not support the File System Access API. Please use Chrome or Edge.", "error");
+                    return;
+                }
+
+                // Request access
+                rootDirectoryHandle = await window.showDirectoryPicker({ mode: 'readwrite' });
+                
+                // Update UI visually
+                document.getElementById('dir-display').value = `🔗 Linked: ${rootDirectoryHandle.name}`;
+                document.querySelector('#tab-deduplicator input[readonly]').value = `🔗 Linked: ${rootDirectoryHandle.name}`;
+                
+                showToast(`Successfully linked to folder: ${rootDirectoryHandle.name}`, "success");
+
+            } catch (err) {
+                if (err.name !== 'AbortError') {
+                    showToast(`Error accessing directory: ${err.message}`, "error");
+                    console.error(err);
+                }
+            }
+        }
+
+        // --- MOCK PROCESSES ---
+        function simulateAnalysis() {
+            if (!rootDirectoryHandle) {
+                showToast("Please link a Local Folder first.", "warning");
+                return;
+            }
+            const apiKey = localStorage.getItem('nexus_api_key');
+            if (!apiKey) {
+                showToast("AI Engine not configured. Please open AI Settings.", "error");
+                openApiModal();
+                return;
+            }
+            
+            document.getElementById('organizer-status').innerHTML = `
+                <div class="flex flex-col items-center gap-4">
+                    <svg class="animate-spin h-8 w-8 text-brand" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                    <span class="text-white font-semibold">Reading local file streams via Browser API...</span>
+                </div>
+            `;
+            setTimeout(() => {
+                showToast("Ready to query LLM (Backend simulation complete)", "success");
+                document.getElementById('organizer-status').innerHTML = "<span class='text-brand font-bold'>Scan Complete. Waiting for LLM integration.</span>";
+            }, 2000);
+        }
+
+        function simulateScan() {
+            if (!rootDirectoryHandle) {
+                showToast("Please link a Local Sector first.", "warning");
+                return;
+            }
+            const isLocal = document.getElementById('local-process-check').checked;
+            
+            document.getElementById('dedupe-status').innerHTML = `
+                <div class="flex flex-col items-center gap-4 mt-20">
+                    <svg class="animate-spin h-8 w-8 text-brand" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                    <span class="text-white font-semibold">${isLocal ? 'Hashing files locally via Web Crypto API...' : 'Transmitting chunks to Remote Oracle...'}</span>
+                </div>
+            `;
+        }
+
+        // --- API MODAL & KEY MANAGEMENT ---
+        const instructions = {
+            gemini: `
+                <ol class="list-decimal pl-4 space-y-1">
+                    <li>Go to the <a href="https://aistudio.google.com/app/apikey" target="_blank" class="text-brand hover:underline">Google AI Studio</a>.</li>
+                    <li>Sign in with your Google account.</li>
+                    <li>Click <strong>Create API Key</strong>.</li>
+                    <li>Paste the key below.</li>
+                </ol>
+            `,
+            openai: `
+                <ol class="list-decimal pl-4 space-y-1">
+                    <li>Go to <a href="https://platform.openai.com/api-keys" target="_blank" class="text-brand hover:underline">OpenAI API Keys</a>.</li>
+                    <li>Sign in and create a new secret key.</li>
+                    <li>Paste the key below.</li>
+                </ol>
+            `,
+            claude: `
+                <div class="text-danger font-bold mb-1 flex items-center gap-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                    Advanced Setup Required
+                </div>
+                <p class="mb-2 text-xs">Anthropic blocks browsers from making direct API calls. You must deploy a tiny, free proxy server on your Cloudflare account to route requests securely.</p>
+                <ol class="list-decimal pl-4 space-y-1">
+                    <li>Get your key from the <a href="https://console.anthropic.com/" target="_blank" class="text-brand hover:underline">Anthropic Console</a>.</li>
+                    <li>Deploy the <a href="#" class="text-brand hover:underline">Nexus Proxy Template</a> to Cloudflare Workers.</li>
+                    <li>Paste your Proxy URL and API Key below.</li>
+                </ol>
+            `
+        };
+
+        function updateApiInstructions() {
+            const provider = document.getElementById('api-provider').value;
+            document.getElementById('instructions-box').innerHTML = instructions[provider];
+            
+            if (provider === 'claude') {
+                document.getElementById('proxy-input-group').classList.remove('hidden');
+            } else {
+                document.getElementById('proxy-input-group').classList.add('hidden');
+            }
+        }
+
+        function openApiModal() {
+            const modal = document.getElementById('api-modal');
+            const content = document.getElementById('api-modal-content');
+            
+            // Load existing keys if any
+            const savedProvider = localStorage.getItem('nexus_api_provider') || 'gemini';
+            document.getElementById('api-provider').value = savedProvider;
+            updateApiInstructions();
+            
+            document.getElementById('api-key').value = localStorage.getItem('nexus_api_key') || '';
+            document.getElementById('proxy-url').value = localStorage.getItem('nexus_proxy_url') || '';
+
+            modal.classList.remove('hidden');
+            // Trigger reflow
+            void modal.offsetWidth;
+            modal.classList.remove('opacity-0');
+            content.classList.remove('scale-95');
+        }
+
+        function closeApiModal() {
+            const modal = document.getElementById('api-modal');
+            const content = document.getElementById('api-modal-content');
+            
+            modal.classList.add('opacity-0');
+            content.classList.add('scale-95');
+            
+            setTimeout(() => {
+                modal.classList.add('hidden');
+            }, 300); // match duration
+        }
+
+        function saveApiSettings() {
+            const provider = document.getElementById('api-provider').value;
+            const key = document.getElementById('api-key').value.trim();
+            const proxy = document.getElementById('proxy-url').value.trim();
+
+            if (!key) {
+                showToast("Please enter an API key.", "error");
+                return;
+            }
+
+            if (provider === 'claude' && !proxy) {
+                showToast("Cloudflare Proxy URL is required for Claude.", "error");
+                return;
+            }
+
+            localStorage.setItem('nexus_api_provider', provider);
+            localStorage.setItem('nexus_api_key', key);
+            localStorage.setItem('nexus_proxy_url', proxy);
+
+            showToast("AI Configuration saved securely.", "success");
+            closeApiModal();
+        }
+
+        function togglePassword() {
+            const input = document.getElementById('api-key');
+            if (input.type === 'password') {
+                input.type = 'text';
+            } else {
+                input.type = 'password';
+            }
+        }
+
+        // Initialize UI
+        document.addEventListener('DOMContentLoaded', () => {
+            updateApiInstructions();
+            
+            // Auto-prompt if no key is found on first load
+            if (!localStorage.getItem('nexus_api_key')) {
+                setTimeout(openApiModal, 500);
+            }
+        });
+
+    </script>
+</body>
+</html>
