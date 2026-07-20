@@ -10,8 +10,7 @@
     <meta http-equiv="Expires" content="0">
     
     <title>Nexus Data Suite (Web Edition)</title>
-    
-    <!-- Favicon Link -->
+    <!-- Favicon -->
     <link rel="icon" type="image/png" href="favicon.png">
     
     <script src="https://cdn.tailwindcss.com"></script>
@@ -40,11 +39,13 @@
     <style>
         body { background-color: #121212; color: #E8EAED; }
         
+        /* Custom scrollbars */
         ::-webkit-scrollbar { width: 10px; }
         ::-webkit-scrollbar-track { background: #121212; }
         ::-webkit-scrollbar-thumb { background: #3A3A3A; border-radius: 5px; }
         ::-webkit-scrollbar-thumb:hover { background: #555555; }
 
+        /* Custom Checkbox */
         .custom-checkbox {
             appearance: none;
             width: 1.25rem;
@@ -55,7 +56,6 @@
             display: inline-block;
             position: relative;
             cursor: pointer;
-            flex-shrink: 0;
         }
         .custom-checkbox:checked {
             background-color: #0057B8;
@@ -73,16 +73,17 @@
             transform: rotate(45deg);
         }
 
+        /* Tabs styling */
         .tab-btn { transition: all 0.2s ease; border-bottom: 2px solid transparent; }
         .tab-btn.active { border-bottom: 2px solid #0057B8; color: white; background-color: #2D2D2D; }
 
-        #toast-container { position: fixed; bottom: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; }
-        .toast { padding: 12px 20px; border-radius: 8px; font-weight: 500; color: white; opacity: 0; transform: translateY(20px); transition: all 0.3s ease; box-shadow: 0 4px 6px rgba(0,0,0,0.3); }
+        /* Toast Notifications */
+        #toast-container { position: fixed; bottom: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; pointer-events: none; }
+        .toast { padding: 12px 20px; border-radius: 8px; font-weight: 500; color: white; opacity: 0; transform: translateY(20px); transition: all 0.3s ease; box-shadow: 0 4px 6px rgba(0,0,0,0.3); pointer-events: auto; }
         .toast.show { opacity: 1; transform: translateY(0); }
         .toast-success { background-color: #0057B8; }
         .toast-error { background-color: #CF6679; }
         .toast-warning { background-color: #F5A623; color: #121212; }
-        .toast-info { background-color: #3A3A3A; }
     </style>
 </head>
 <body class="min-h-screen flex flex-col font-sans antialiased overflow-x-hidden">
@@ -91,18 +92,21 @@
     <div id="toast-container"></div>
 
     <!-- Header -->
-    <header class="bg-card border-b border-surface px-6 py-4 flex justify-between items-center shadow-md">
+    <header class="bg-card border-b border-surface px-6 py-4 flex flex-col sm:flex-row justify-between items-center shadow-md gap-4">
         <h1 class="text-2xl font-bold text-brand">Nexus Data Suite <span class="text-sm text-textMuted font-normal ml-2">Web Edition</span></h1>
-        <!-- Buy Me A Coffee Button -->
-            <a href="YOUR_PATREON_LINK_HERE" target="_blank" class="bg-surface hover:bg-[#3A3A3A] border border-gray-600 text-white px-4 py-2 rounded-md font-semibold transition flex items-center gap-2">
-                <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M15.38 0c-4.76 0-8.63 3.87-8.63 8.63 0 4.75 3.87 8.63 8.63 8.63 4.76 0 8.63-3.87 8.63-8.63C24.01 3.87 20.14 0 15.38 0zM0 23.38h4.31V0H0v23.38z"/></svg>
+        
+        <div class="flex items-center gap-3">
+            <!-- Buy Me A Coffee Button -->
+            <a href="YOUR_PATREON_LINK_HERE" target="_blank" class="bg-surface hover:bg-[#3A3A3A] border border-gray-600 text-white px-4 py-2 rounded-md font-semibold transition flex items-center gap-2 shadow-sm">
+                <svg class="w-4 h-4 fill-current text-[#FF424D]" viewBox="0 0 24 24"><path d="M15.38 0c-4.76 0-8.63 3.87-8.63 8.63 0 4.75 3.87 8.63 8.63 8.63 4.76 0 8.63-3.87 8.63-8.63C24.01 3.87 20.14 0 15.38 0zM0 23.38h4.31V0H0v23.38z"/></svg>
                 Buy me a coffee
             </a>
-            <button onclick="openApiModal()" ...
-        <button onclick="openApiModal()" class="bg-surface hover:bg-[#3A3A3A] border border-gray-600 text-white px-4 py-2 rounded-md font-semibold transition flex items-center gap-2">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
-            AI Settings
-        </button>
+            
+            <button onclick="openApiModal()" class="bg-brand hover:bg-brandHover border border-brand text-white px-4 py-2 rounded-md font-semibold transition flex items-center gap-2 shadow-sm">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                AI Settings
+            </button>
+        </div>
     </header>
 
     <!-- Tabs Navigation -->
@@ -116,192 +120,220 @@
         <!-- SMART ORGANIZER TAB -->
         <section id="tab-organizer" class="space-y-6">
             
-            <div class="bg-card p-6 rounded-xl shadow-lg border border-surface">
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                    
-                    <!-- Left Column: Core Settings -->
-                    <div class="space-y-5">
-                        <div>
-                            <label class="text-brand font-semibold block mb-2">Target Node (Directory)</label>
-                            <div class="flex gap-2 w-full">
-                                <input type="text" id="dir-display" readonly placeholder="No directory linked..." class="flex-grow bg-surface border border-gray-600 text-textMain rounded-md px-4 py-2 focus:outline-none cursor-not-allowed opacity-70">
-                                <button onclick="requestDirectoryAccess()" class="bg-surface hover:bg-[#3A3A3A] border border-gray-600 px-6 py-2 rounded-md font-bold transition">Link Node</button>
-                            </div>
-                        </div>
-
-                        <div class="grid grid-cols-2 gap-4">
-                            <div>
-                                <label class="text-brand font-semibold block mb-2">Diagnostic Sample Size</label>
-                                <input type="number" id="sample-size-input" value="20" min="1" max="50" class="w-full bg-surface border border-gray-600 text-textMain rounded-md px-4 py-2 focus:outline-none focus:border-brand">
-                            </div>
-                            <div>
-                                <label class="text-brand font-semibold block mb-2">Max Category Clusters</label>
-                                <input type="number" id="max-categories-input" value="5" min="1" max="15" class="w-full bg-surface border border-gray-600 text-textMain rounded-md px-4 py-2 focus:outline-none focus:border-brand">
-                            </div>
-                        </div>
-
-                        <div>
-                            <label class="text-brand font-semibold block mb-2">Oracle Directives (Optional)</label>
-                            <input type="text" id="oracle-hint-input" placeholder="e.g., 'These are finance documents.'" class="w-full bg-surface border border-gray-600 text-textMain rounded-md px-4 py-2 focus:outline-none focus:border-brand">
-                        </div>
-
-                        <div class="flex items-center gap-3 pt-2">
-                            <input type="checkbox" id="subdirs-check" checked class="custom-checkbox">
-                            <label for="subdirs-check" class="text-brand font-semibold cursor-pointer">Deep Scan (Include Subdirectories)</label>
-                        </div>
+            <div class="bg-card p-6 rounded-xl shadow-lg border border-surface space-y-5">
+                <div class="flex flex-col md:flex-row gap-4 items-center">
+                    <label class="text-brand font-semibold md:w-1/4">Target Node (Directory)</label>
+                    <div class="flex-grow flex gap-2 w-full">
+                        <input type="text" id="dir-display" readonly placeholder="No directory linked..." class="flex-grow bg-surface border border-gray-600 text-textMain rounded-md px-4 py-2 focus:outline-none cursor-not-allowed opacity-70">
+                        <button onclick="requestDirectoryAccess()" class="bg-surface hover:bg-[#3A3A3A] border border-gray-600 px-6 py-2 rounded-md font-bold transition">Link Local Folder</button>
                     </div>
+                </div>
 
-                    <!-- Right Column: Escalation Engine Settings -->
-                    <div class="bg-surface/40 p-5 rounded-lg border border-gray-700 space-y-4">
-                        <div class="flex items-center gap-3 border-b border-gray-600 pb-4">
-                            <input type="checkbox" id="fallback-check" checked onchange="toggleFallbackUI()" class="custom-checkbox">
-                            <label for="fallback-check" class="text-brand font-semibold cursor-pointer text-lg">Escalate to Deep Analysis</label>
-                        </div>
-                        
-                        <div id="fallback-settings" class="space-y-5 pt-2 transition-opacity duration-300">
-                            <p class="text-sm text-textMain font-medium">
-                                Files classified with a confidence score below the threshold will be re-analyzed using your configured heavy Fallback Model.
-                            </p>
-                            <div>
-                                <label class="text-white font-semibold block mb-2 text-sm">Certainty Threshold (%)</label>
-                                <input type="number" id="threshold-input" value="90" min="0" max="100" class="w-full bg-[#1e1e1e] border border-gray-600 text-textMain rounded-md px-4 py-3 focus:outline-none focus:border-brand">
-                            </div>
-                            <button onclick="openApiModal()" class="text-brand hover:text-brandHover text-sm font-semibold underline mt-2 block">
-                                Configure Advanced Models in AI Settings &rarr;
-                            </button>
-                        </div>
+                <div class="flex flex-col md:flex-row gap-4 items-center">
+                    <label for="sample-size-input" class="text-brand font-semibold md:w-1/4">Diagnostic Sample Size</label>
+                    <input type="number" id="sample-size-input" value="20" min="1" max="50" class="w-full md:w-32 bg-surface border border-gray-600 text-textMain rounded-md px-4 py-2 focus:outline-none focus:border-brand">
+                </div>
+                
+                <div class="flex flex-col md:flex-row gap-4 items-center">
+                    <label for="max-clusters-input" class="text-brand font-semibold md:w-1/4">Max Category Clusters</label>
+                    <input type="number" id="max-clusters-input" value="5" min="2" max="15" class="w-full md:w-32 bg-surface border border-gray-600 text-textMain rounded-md px-4 py-2 focus:outline-none focus:border-brand">
+                </div>
+
+                <div class="flex flex-col md:flex-row gap-4 items-center">
+                    <label for="oracle-hint-input" class="text-brand font-semibold md:w-1/4">Oracle Directives (Optional)</label>
+                    <input type="text" id="oracle-hint-input" placeholder="e.g., 'These are finance documents.'" class="w-full bg-surface border border-gray-600 text-textMain rounded-md px-4 py-2 focus:outline-none focus:border-brand">
+                </div>
+
+                <div class="flex flex-col md:flex-row gap-4 items-center">
+                    <div class="flex items-center gap-3 md:w-1/4">
+                        <input type="checkbox" id="escalate-check" checked class="custom-checkbox">
+                        <label for="escalate-check" class="text-brand font-semibold cursor-pointer">Escalate to Deep Analysis</label>
                     </div>
+                    <div class="flex items-center gap-3">
+                        <label class="text-gray-300 text-sm">if confidence drops below:</label>
+                        <input type="number" id="confidence-threshold" value="90" min="0" max="100" class="w-20 bg-surface border border-gray-600 text-textMain rounded-md px-3 py-1 focus:outline-none focus:border-brand text-sm">
+                        <span class="text-gray-300 text-sm">%</span>
+                    </div>
+                </div>
 
+                <div class="flex items-center gap-3 mt-2 border-t border-surface pt-4">
+                    <input type="checkbox" id="subdirs-check" checked class="custom-checkbox">
+                    <label for="subdirs-check" class="text-brand font-semibold cursor-pointer">Deep Scan (Include Subdirectories)</label>
                 </div>
             </div>
 
-            <button onclick="runActualAnalysis()" id="btn-initiate" class="w-full bg-brand hover:bg-brandHover text-white px-8 py-4 rounded-md font-bold text-lg transition shadow-lg tracking-wide">
-                Initialize Sort Protocol
-            </button>
+            <div class="flex gap-4">
+                <button id="init-sort-btn" onclick="runActualAnalysis()" class="bg-brand hover:bg-brandHover text-white px-8 py-3 rounded-md font-bold text-lg transition flex-grow shadow-lg">Initialize Sort Protocol</button>
+            </div>
 
-            <!-- Dynamic Status / Approval Container -->
-            <div class="bg-card p-6 rounded-xl shadow-lg border border-surface min-h-[200px] flex flex-col items-center justify-center transition-all duration-300" id="organizer-container">
-                <p class="text-textMuted text-center w-full" id="organizer-status">System idle. Awaiting node selection.</p>
+            <div class="bg-card p-6 rounded-xl shadow-lg border border-surface min-h-[200px] flex flex-col items-center justify-center relative">
+                
+                <div id="organizer-dynamic-ui" class="w-full hidden">
+                    <!-- Progress Section -->
+                    <div class="w-full mb-6">
+                        <div class="flex justify-between text-sm text-textMuted mb-2">
+                            <span id="organizer-progress-text">Processing...</span>
+                            <span id="organizer-progress-pct">0%</span>
+                        </div>
+                        <div class="w-full bg-surface rounded-full h-2.5 overflow-hidden border border-gray-600">
+                            <div id="organizer-progress-bar" class="bg-brand h-2.5 rounded-full transition-all duration-300" style="width: 0%"></div>
+                        </div>
+                    </div>
+                    
+                    <!-- Categories Approval Section -->
+                    <div id="category-approval-section" class="hidden w-full bg-surface p-4 rounded-lg border border-gray-600">
+                        <h3 class="text-lg font-bold text-white mb-2">Review Proposed Clusters</h3>
+                        <p class="text-sm text-textMuted mb-4">Uncheck categories you do not want, then click Recalibrate or Approve.</p>
+                        
+                        <div id="category-checkbox-list" class="space-y-2 mb-4 max-h-48 overflow-y-auto pr-2">
+                            <!-- Checkboxes injected here -->
+                        </div>
+                        
+                        <div class="flex gap-3 border-t border-gray-600 pt-4">
+                            <button onclick="approveCategoriesAndSort()" class="bg-[#4ade80] hover:bg-[#22c55e] text-[#121212] px-4 py-2 rounded-md font-bold transition flex-1">Approve & Sort</button>
+                            <button onclick="recalibrateCategories()" class="bg-surface hover:bg-[#3A3A3A] border border-gray-500 text-white px-4 py-2 rounded-md font-bold transition flex-1">Recalibrate Unchecked</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="organizer-status-fallback" class="text-textMuted text-center">System idle. Awaiting node selection.</div>
             </div>
         </section>
 
         <!-- DUPLICATE FINDER TAB -->
         <section id="tab-deduplicator" class="hidden space-y-6">
+            
             <div class="bg-card p-6 rounded-xl shadow-lg border border-surface space-y-5">
+                
                 <div class="flex items-center justify-between bg-surface p-4 rounded-md border border-gray-600">
                     <div>
                         <h3 class="font-bold text-white text-lg">Local Processing (Web Crypto)</h3>
-                        <p class="text-sm text-textMuted">Hash files directly in your browser. Fastest for most users.</p>
+                        <p class="text-sm text-textMuted">Hash files securely directly in your browser. Fastest for most users.</p>
                     </div>
-                    <input type="checkbox" id="local-process-check" checked onchange="toggleOracleSettings()" class="custom-checkbox w-6 h-6">
-                </div>
-
-                <div id="oracle-settings" class="hidden space-y-4 border-l-4 border-brand pl-4 mt-4 transition-all duration-300">
-                    <div class="bg-blue-900/20 text-blue-200 p-4 rounded-md text-sm border border-blue-800/50">
-                        <strong>Cloud Acceleration Enabled 🚀</strong>
-                        To offload heavy processing from your device, file signatures will be transmitted to the Nexus Oracle. Your files are never sent over the internet, only structural hashes.
-                    </div>
+                    <input type="checkbox" id="local-process-check" checked class="custom-checkbox w-6 h-6 cursor-not-allowed opacity-50" disabled title="Cloud processing disabled in pure web mode">
                 </div>
 
                 <div class="flex flex-col md:flex-row gap-4 items-center pt-4">
                     <label class="text-brand font-semibold md:w-1/4">Primary Data Sector</label>
                     <div class="flex-grow flex gap-2 w-full">
-                        <input type="text" readonly placeholder="No directory linked..." class="flex-grow bg-surface border border-gray-600 text-textMain rounded-md px-4 py-2 cursor-not-allowed opacity-70 focus:outline-none">
+                        <input type="text" id="dedupe-dir-display" readonly placeholder="No directory linked..." class="flex-grow bg-surface border border-gray-600 text-textMain rounded-md px-4 py-2 cursor-not-allowed opacity-70 focus:outline-none">
                         <button onclick="requestDirectoryAccess()" class="bg-surface hover:bg-[#3A3A3A] border border-gray-600 px-6 py-2 rounded-md font-bold transition">Link Sector</button>
                     </div>
                 </div>
+
             </div>
 
-            <button onclick="simulateScan()" class="w-full bg-brand hover:bg-brandHover text-white px-8 py-3 rounded-md font-bold text-lg transition shadow-lg">Initiate Deep Scan</button>
+            <button onclick="runActualDeduplication()" id="btn-init-dedupe" class="w-full bg-brand hover:bg-brandHover text-white px-8 py-3 rounded-md font-bold text-lg transition shadow-lg">Initiate Deep Scan</button>
             
-            <div class="bg-card p-6 rounded-xl shadow-lg border border-surface min-h-[300px]" id="dedupe-status-container">
-                <p class="text-textMuted text-center mt-20" id="dedupe-status">Data Vault is active. Link a sector to begin.</p>
+            <div class="bg-card p-6 rounded-xl shadow-lg border border-surface min-h-[300px] flex flex-col relative">
+                
+                <div id="dedupe-dynamic-ui" class="w-full hidden mb-4">
+                    <div class="flex justify-between text-sm text-textMuted mb-2">
+                        <span id="dedupe-progress-text">Mapping Sectors...</span>
+                        <span id="dedupe-progress-pct">0%</span>
+                    </div>
+                    <div class="w-full bg-surface rounded-full h-2.5 overflow-hidden border border-gray-600">
+                        <div id="dedupe-progress-bar" class="bg-brand h-2.5 rounded-full transition-all duration-300" style="width: 0%"></div>
+                    </div>
+                </div>
+
+                <div id="dedupe-status" class="text-textMuted text-center flex-grow flex items-center justify-center">
+                    Data Vault is active. Link a sector to begin.
+                </div>
             </div>
         </section>
 
     </main>
 
-    <!-- API Setup Modal -->
+    <!-- AI Setup Modal -->
     <div id="api-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center hidden opacity-0 transition-opacity duration-300">
-        <div class="bg-card w-full max-w-2xl rounded-2xl shadow-2xl border border-surface transform scale-95 transition-transform duration-300 p-8" id="api-modal-content">
+        <div class="bg-card w-full max-w-3xl rounded-2xl shadow-2xl border border-surface transform scale-95 transition-transform duration-300 p-8" id="api-modal-content">
             
             <div class="flex justify-between items-start mb-6">
                 <div>
                     <h2 class="text-2xl font-bold text-brand">Nexus AI Engine Setup</h2>
-                    <p class="text-textMuted mt-1">Configure your LLM provider and select active models.</p>
+                    <p class="text-textMuted mt-1">Configure your LLM providers for Multimodal processing.</p>
                 </div>
                 <button onclick="closeApiModal()" class="text-gray-400 hover:text-white transition">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                 </button>
             </div>
 
-            <div class="space-y-5 max-h-[60vh] overflow-y-auto custom-scrollbar pr-2">
-                <div>
-                    <label class="block text-sm font-semibold text-gray-300 mb-2">Select AI Provider</label>
-                    <select id="api-provider" onchange="updateApiInstructions()" class="w-full bg-surface border border-gray-600 text-white rounded-md px-4 py-3 focus:outline-none focus:border-brand appearance-none">
-                        <option value="gemini">Google Gemini (Default - Multimodal Support)</option>
-                        <option value="openai">ChatGPT / OpenAI</option>
-                        <option value="claude">Claude / Anthropic (Advanced Proxy Required)</option>
-                    </select>
-                </div>
-
-                <div id="instructions-box" class="bg-surface p-4 rounded-md border border-gray-700 text-sm text-gray-300 space-y-2">
-                    <!-- Populated by JS -->
-                </div>
-
-                <div id="proxy-input-group" class="hidden">
-                    <label class="block text-sm font-semibold text-gray-300 mb-2">Cloudflare Proxy URL</label>
-                    <input type="text" id="proxy-url" placeholder="https://nexus-proxy.yourname.workers.dev" class="w-full bg-surface border border-gray-600 text-white rounded-md px-4 py-3 focus:outline-none focus:border-brand">
-                </div>
-
-                <div>
-                    <label class="block text-sm font-semibold text-gray-300 mb-2">API Key</label>
-                    <div class="relative">
-                        <input type="password" id="api-key" placeholder="Paste your secure key here..." class="w-full bg-surface border border-gray-600 text-white rounded-md px-4 py-3 focus:outline-none focus:border-brand pr-12">
-                        <button type="button" onclick="togglePassword()" class="absolute right-3 top-3.5 text-gray-400 hover:text-white">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" id="eye-icon"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
-                        </button>
-                    </div>
-                </div>
-
-                <div class="flex flex-col gap-3 bg-surface p-4 rounded-md border border-gray-700">
-                    <div class="flex items-center gap-4">
-                        <button onclick="refreshModels()" class="bg-card hover:bg-[#3A3A3A] border border-gray-500 text-white px-4 py-2 rounded-md text-sm font-bold transition flex items-center gap-2">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
-                            Fetch Available Models
-                        </button>
-                        <p id="model-refresh-status" class="text-sm text-textMuted flex-grow">Click to sync API access.</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Left Column: Provider & Key -->
+                <div class="space-y-5">
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-300 mb-2">AI Provider</label>
+                        <select id="api-provider" class="w-full bg-surface border border-gray-600 text-white rounded-md px-4 py-3 focus:outline-none focus:border-brand appearance-none">
+                            <option value="gemini">Google Gemini (Multimodal Native)</option>
+                            <option value="openai">OpenAI (GPT Models)</option>
+                        </select>
                     </div>
 
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
-                        <div>
-                            <label class="text-brand font-semibold block mb-1 text-xs">Primary AI Model (Fast Pass)</label>
-                            <select id="base-model-select" class="w-full bg-[#1e1e1e] border border-gray-600 text-white rounded-md px-3 py-2 text-sm focus:outline-none focus:border-brand appearance-none cursor-pointer">
-                                <option value="">(Fetch models first)</option>
-                            </select>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-300 mb-2">API Key</label>
+                        <div class="relative">
+                            <input type="password" id="api-key" placeholder="Paste secure key here..." class="w-full bg-surface border border-gray-600 text-white rounded-md px-4 py-3 focus:outline-none focus:border-brand pr-12">
+                            <button type="button" onclick="togglePassword()" class="absolute right-3 top-3.5 text-gray-400 hover:text-white">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" id="eye-icon"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+                            </button>
                         </div>
-                        <div>
-                            <label class="text-brand font-semibold block mb-1 text-xs">Fallback Model (Deep Analysis)</label>
-                            <select id="fallback-model-select" class="w-full bg-[#1e1e1e] border border-gray-600 text-white rounded-md px-3 py-2 text-sm focus:outline-none focus:border-brand appearance-none cursor-pointer">
-                                <option value="">(Fetch models first)</option>
-                            </select>
-                        </div>
+                    </div>
+                    
+                    <button onclick="refreshModels()" class="w-full bg-surface hover:bg-[#3A3A3A] border border-gray-500 text-white px-4 py-2 rounded-md font-semibold transition flex items-center justify-center gap-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                        Fetch Available Models
+                    </button>
+                </div>
+
+                <!-- Right Column: Model Selection -->
+                <div class="space-y-5 bg-surface/50 p-4 rounded-lg border border-gray-700">
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-300 mb-2">Primary Model (Fast & Efficient)</label>
+                        <select id="primary-model-select" class="w-full bg-surface border border-gray-600 text-white rounded-md px-4 py-3 focus:outline-none focus:border-brand appearance-none">
+                            <option value="">Fetch models first...</option>
+                        </select>
+                        <p class="text-xs text-textMuted mt-1">Used for initial scans and bulk processing.</p>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-300 mb-2">Fallback Model (Heavy Analysis)</label>
+                        <select id="fallback-model-select" class="w-full bg-surface border border-gray-600 text-white rounded-md px-4 py-3 focus:outline-none focus:border-brand appearance-none">
+                            <option value="">Fetch models first...</option>
+                        </select>
+                        <p class="text-xs text-textMuted mt-1">Used if Primary Model confidence is too low.</p>
                     </div>
                 </div>
             </div>
 
-            <div class="flex justify-between items-center mt-6 pt-6 border-t border-surface">
-                <button onclick="closeApiModal()" class="text-textMuted hover:text-white transition px-4 py-2">Cancel</button>
+            <div class="flex justify-end items-center mt-8 pt-6 border-t border-surface gap-4">
+                <button onclick="closeApiModal()" class="text-textMuted hover:text-white transition px-4 py-2 font-semibold">Cancel</button>
                 <button onclick="saveApiSettings()" class="bg-brand hover:bg-brandHover text-white px-6 py-2 rounded-md font-bold transition shadow-md">Save Configuration</button>
             </div>
         </div>
     </div>
 
+    <!-- Custom Delete Confirmation Modal (Avoids window.confirm) -->
+    <div id="delete-modal" class="fixed inset-0 bg-black/90 backdrop-blur-md z-[60] flex items-center justify-center hidden opacity-0 transition-opacity duration-200">
+        <div class="bg-[#1a1a1a] w-full max-w-md rounded-xl shadow-2xl border border-danger transform scale-95 transition-transform duration-200 p-6 text-center" id="delete-modal-content">
+            <svg class="w-16 h-16 text-danger mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+            <h2 class="text-2xl font-bold text-white mb-2">CRITICAL WARNING</h2>
+            <p class="text-gray-300 mb-6" id="delete-modal-text">You are about to permanently obliterate selected files from your hard drive. This cannot be undone. Proceed?</p>
+            <div class="flex justify-center gap-4">
+                <button onclick="closeDeleteModal(false)" class="bg-surface hover:bg-[#3A3A3A] border border-gray-600 text-white px-6 py-2 rounded-md font-bold transition">Cancel</button>
+                <button onclick="closeDeleteModal(true)" class="bg-danger hover:bg-[#F28B82] text-[#121212] px-6 py-2 rounded-md font-bold transition shadow-md">Obliterate Files</button>
+            </div>
+        </div>
+    </div>
+
+
     <script>
         let rootDirectoryHandle = null;
-        let isProcessing = false;
-        const ORACLE_WS_URL = "wss://oracle.dadianhosted.com:8443"; 
+        let globalFilesToClassify = [];
+        let globalApprovedCategories = [];
+        let deleteConfirmCallback = null;
 
+        // UI Utilities
         function switchTab(tabId) {
             document.getElementById('tab-organizer').classList.add('hidden');
             document.getElementById('tab-deduplicator').classList.add('hidden');
@@ -322,153 +354,7 @@
             setTimeout(() => {
                 toast.classList.remove('show');
                 setTimeout(() => toast.remove(), 300);
-            }, type === 'warning' || type === 'info' ? 4000 : 3000);
-        }
-
-        function toggleFallbackUI() {
-            const isChecked = document.getElementById('fallback-check').checked;
-            const settingsDiv = document.getElementById('fallback-settings');
-            settingsDiv.style.opacity = isChecked ? "1" : "0.3";
-            settingsDiv.style.pointerEvents = isChecked ? "auto" : "none";
-        }
-
-        function toggleOracleSettings() {
-            const isChecked = document.getElementById('local-process-check').checked;
-            const settingsDiv = document.getElementById('oracle-settings');
-            if (isChecked) {
-                settingsDiv.classList.add('hidden');
-            } else {
-                settingsDiv.classList.remove('hidden');
-            }
-        }
-
-        async function refreshModels() {
-            const provider = document.getElementById('api-provider').value;
-            const key = document.getElementById('api-key').value.trim();
-            const proxy = document.getElementById('proxy-url').value.trim();
-            const statusEl = document.getElementById('model-refresh-status');
-
-            if (!key) {
-                statusEl.innerHTML = `<span class="text-danger">Please enter an API Key first.</span>`;
-                return;
-            }
-
-            statusEl.innerHTML = `<span class="text-brand">Fetching models securely...</span>`;
-            let availableModels = [];
-
-            try {
-                if (provider === 'gemini') {
-                    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${key}`);
-                    if (!res.ok) throw new Error(`Gemini API Error: ${res.status} ${res.statusText}`);
-                    const data = await res.json();
-                    
-                    availableModels = data.models
-                        .filter(m => m.supportedGenerationMethods && m.supportedGenerationMethods.includes('generateContent') && m.name.toLowerCase().includes('gemini'))
-                        .map(m => ({ id: m.name.replace('models/', ''), name: m.displayName || m.name.replace('models/', '') }));
-                } 
-                else if (provider === 'openai') {
-                    const res = await fetch('https://api.openai.com/v1/models', {
-                        headers: { 'Authorization': `Bearer ${key}` }
-                    });
-                    if (!res.ok) throw new Error(`OpenAI Error: ${res.status} ${res.statusText}`);
-                    const data = await res.json();
-                    
-                    availableModels = data.data
-                        .filter(m => m.id.includes('gpt'))
-                        .map(m => ({ id: m.id, name: m.id }));
-                } 
-                else if (provider === 'claude') {
-                    availableModels = [
-                        { id: "claude-3-5-sonnet-20240620", name: "Claude 3.5 Sonnet" },
-                        { id: "claude-3-opus-20240229", name: "Claude 3 Opus" },
-                        { id: "claude-3-haiku-20240307", name: "Claude 3 Haiku" }
-                    ];
-                }
-
-                if (availableModels.length > 0) {
-                    localStorage.setItem(`nexus_models_${provider}`, JSON.stringify(availableModels));
-                    populateModelDropdown(provider);
-                    statusEl.innerHTML = `<span class="text-[#4ade80] font-bold">Success! Loaded ${availableModels.length} models.</span>`;
-                } else {
-                    statusEl.innerHTML = `<span class="text-warning">Key valid, but no compatible models found.</span>`;
-                }
-
-            } catch (err) {
-                console.error(err);
-                statusEl.innerHTML = `<span class="text-danger font-bold">Fetch Failed: ${err.message}</span>`;
-            }
-        }
-
-        function populateModelDropdown(forceProvider = null) {
-            const provider = forceProvider || localStorage.getItem('nexus_api_provider') || 'gemini';
-            const baseSelect = document.getElementById('base-model-select');
-            const fallbackSelect = document.getElementById('fallback-model-select');
-            
-            baseSelect.innerHTML = '';
-            fallbackSelect.innerHTML = '';
-
-            const storedModels = localStorage.getItem(`nexus_models_${provider}`);
-            if (storedModels) {
-                const models = JSON.parse(storedModels);
-                
-                let bestFastIdx = 0, bestHeavyIdx = 0;
-                let highestFastScore = -999, highestHeavyScore = -999;
-
-                models.forEach((model, idx) => {
-                    const opt1 = document.createElement('option');
-                    opt1.value = model.id; opt1.textContent = model.name;
-                    const opt2 = document.createElement('option');
-                    opt2.value = model.id; opt2.textContent = model.name;
-
-                    baseSelect.appendChild(opt1);
-                    fallbackSelect.appendChild(opt2);
-
-                    const name = model.id.toLowerCase();
-                    let fastScore = 0, heavyScore = 0;
-
-                    if (name.includes('flash')) fastScore += 20;
-                    if (name.includes('mini')) fastScore += 20;
-                    if (name.includes('haiku')) fastScore += 20;
-                    if (name.includes('pro')) fastScore -= 10;
-                    if (name.includes('opus')) fastScore -= 10;
-                    
-                    if (name.includes('pro')) heavyScore += 20;
-                    if (name.includes('opus')) heavyScore += 20;
-                    if (name.includes('gpt-4') || name.includes('gpt-5')) heavyScore += 20;
-                    if (name.includes('flash')) heavyScore -= 10;
-                    if (name.includes('mini')) heavyScore -= 10;
-                    if (name.includes('haiku')) heavyScore -= 10;
-
-                    const verMatch = name.match(/\d+(\.\d+)?/);
-                    if (verMatch) {
-                        const ver = parseFloat(verMatch[0]);
-                        if (!isNaN(ver)) { fastScore += ver; heavyScore += ver; }
-                    }
-
-                    if (fastScore > highestFastScore) { highestFastScore = fastScore; bestFastIdx = idx; }
-                    if (heavyScore > highestHeavyScore) { highestHeavyScore = heavyScore; bestHeavyIdx = idx; }
-                });
-
-                if (models.length > 0) {
-                    const savedBase = localStorage.getItem('nexus_base_model');
-                    const savedFallback = localStorage.getItem('nexus_fallback_model');
-                    
-                    if (savedBase && Array.from(baseSelect.options).some(o => o.value === savedBase)) {
-                        baseSelect.value = savedBase;
-                    } else {
-                        baseSelect.selectedIndex = bestFastIdx;
-                    }
-
-                    if (savedFallback && Array.from(fallbackSelect.options).some(o => o.value === savedFallback)) {
-                        fallbackSelect.value = savedFallback;
-                    } else {
-                        fallbackSelect.selectedIndex = bestHeavyIdx;
-                    }
-                }
-            } else {
-                baseSelect.innerHTML = '<option value="">(Please fetch models)</option>';
-                fallbackSelect.innerHTML = '<option value="">(Please fetch models)</option>';
-            }
+            }, 3000);
         }
 
         async function requestDirectoryAccess() {
@@ -479,396 +365,13 @@
                 }
                 rootDirectoryHandle = await window.showDirectoryPicker({ mode: 'readwrite' });
                 document.getElementById('dir-display').value = `🔗 Linked: ${rootDirectoryHandle.name}`;
-                document.querySelector('#tab-deduplicator input[readonly]').value = `🔗 Linked: ${rootDirectoryHandle.name}`;
+                document.getElementById('dedupe-dir-display').value = `🔗 Linked: ${rootDirectoryHandle.name}`;
                 showToast(`Successfully linked to folder: ${rootDirectoryHandle.name}`, "success");
             } catch (err) {
-                if (err.name !== 'AbortError') showToast(`Error accessing directory: ${err.message}`, "error");
-            }
-        }
-
-        async function fileToBase64(file) {
-            return new Promise((resolve, reject) => {
-                const reader = new FileReader();
-                reader.readAsDataURL(file);
-                reader.onload = () => {
-                    const result = reader.result;
-                    const base64Data = result.split(',')[1];
-                    resolve(base64Data);
-                };
-                reader.onerror = error => reject(error);
-            });
-        }
-
-        function getMimeTypeForGemini(filename) {
-            const ext = filename.split('.').pop().toLowerCase();
-            const map = {
-                'pdf': 'application/pdf',
-                'png': 'image/png', 'jpg': 'image/jpeg', 'jpeg': 'image/jpeg', 'webp': 'image/webp', 'heic': 'image/heic',
-                'mp3': 'audio/mp3', 'wav': 'audio/wav', 'ogg': 'audio/ogg',
-                'mp4': 'video/mp4', 'webm': 'video/webm', 'mov': 'video/mp4'
-            };
-            return map[ext] || null;
-        }
-
-        async function callLLM(partsArray, systemInstruction, modelName, requireJsonArray = false, requireJsonObject = false) {
-            const provider = localStorage.getItem('nexus_api_provider') || 'gemini';
-            const apiKey = localStorage.getItem('nexus_api_key');
-            const proxyUrl = localStorage.getItem('nexus_proxy_url');
-
-            if (!apiKey) throw new Error("API Key missing. Please configure AI Settings.");
-            if (!modelName) throw new Error("No model selected. Please configure AI Settings and fetch models.");
-
-            if (provider === 'gemini') {
-                const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`;
-                const body = {
-                    contents: [{ parts: partsArray }],
-                    systemInstruction: { parts: [{ text: systemInstruction }] },
-                    generationConfig: {}
-                };
-                
-                if (requireJsonArray) {
-                    body.generationConfig = { responseMimeType: "application/json", responseSchema: { type: "ARRAY", items: { type: "STRING" } } };
-                } else if (requireJsonObject) {
-                    body.generationConfig = { 
-                        responseMimeType: "application/json", 
-                        responseSchema: { type: "OBJECT", properties: { category: { type: "STRING" }, confidence: { type: "INTEGER" } }, required: ["category", "confidence"] } 
-                    };
-                }
-
-                const res = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
-                if (!res.ok) {
-                    const errText = await res.text();
-                    throw new Error(`Gemini API Error (${res.status}): ${errText}`);
-                }
-                const data = await res.json();
-                return JSON.parse(data.candidates[0].content.parts[0].text);
-
-            } else {
-                let promptString = partsArray.filter(p => p.text).map(p => p.text).join('\n');
-                
-                if (provider === 'openai') {
-                    const url = 'https://api.openai.com/v1/chat/completions';
-                    let finalSys = systemInstruction;
-                    if (requireJsonArray) finalSys += " Respond ONLY with a valid JSON array of strings.";
-                    if (requireJsonObject) finalSys += " Respond ONLY with a valid JSON object containing strictly 'category' (string) and 'confidence' (integer 0-100).";
-
-                    const body = {
-                        model: modelName,
-                        messages: [{ role: "system", content: finalSys }, { role: "user", content: promptString }]
-                    };
-                    if (requireJsonArray || requireJsonObject) body.response_format = { type: "json_object" };
-
-                    const res = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` }, body: JSON.stringify(body) });
-                    if (!res.ok) throw new Error(`OpenAI API Error: ${res.statusText}`);
-                    const data = await res.json();
-                    
-                    let text = data.choices[0].message.content;
-                    if (requireJsonArray && !text.trim().startsWith('[')) text = JSON.stringify(Object.values(JSON.parse(text))[0]);
-                    return JSON.parse(text);
-
-                } else if (provider === 'claude') {
-                    if (!proxyUrl) throw new Error("Claude requires a Cloudflare Proxy URL.");
-                    const url = `${proxyUrl.replace(/\/$/, "")}/v1/messages`;
-                    let finalPrompt = promptString;
-                    if (requireJsonArray) finalPrompt += "\n\nRespond ONLY with a valid JSON array of strings.";
-                    if (requireJsonObject) finalPrompt += "\n\nRespond ONLY with a valid JSON object strictly with 'category' and 'confidence'.";
-
-                    const res = await fetch(url, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01' },
-                        body: JSON.stringify({ model: modelName, system: systemInstruction, messages: [{ role: "user", content: finalPrompt }], max_tokens: 1024 })
-                    });
-                    if (!res.ok) throw new Error(`Claude API Error: ${res.statusText}`);
-                    const data = await res.json();
-                    let text = data.content[0].text.trim().replace(/```json\n?/g, '').replace(/```\n?/g, ''); 
-                    return JSON.parse(text);
+                if (err.name !== 'AbortError') {
+                    showToast(`Error accessing directory: ${err.message}`, "error");
                 }
             }
-        }
-
-        async function runActualAnalysis() {
-            if (!rootDirectoryHandle) { showToast("Please link a Local Node first.", "warning"); return; }
-            if (isProcessing) return;
-            isProcessing = true;
-
-            const baseModel = localStorage.getItem('nexus_base_model') || document.getElementById('base-model-select').value;
-            if (!baseModel) { showToast("Please open AI Settings, fetch models, and save configuration.", "error"); isProcessing = false; return; }
-
-            const container = document.getElementById('organizer-container');
-            const initBtn = document.getElementById('btn-initiate');
-            initBtn.disabled = true; initBtn.classList.add('opacity-50', 'cursor-not-allowed');
-
-            const updateStatus = (msg, progress = null) => {
-                let progressHtml = '';
-                if (progress !== null) {
-                    progressHtml = `
-                        <div class="w-full max-w-lg bg-[#3A3A3A] rounded-full h-3 mt-4 overflow-hidden shadow-inner border border-gray-600">
-                            <div class="bg-brand h-3 rounded-full transition-all duration-300" style="width: ${progress}%"></div>
-                        </div>
-                    `;
-                }
-                container.innerHTML = `
-                    <div class="flex flex-col items-center gap-4 py-8 w-full">
-                        ${progress === null || progress < 100 ? '<svg class="animate-spin h-10 w-10 text-brand" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>' : ''}
-                        <span class="text-white font-semibold text-center text-lg">${msg}</span>
-                        ${progressHtml}
-                    </div>
-                `;
-            };
-
-            try {
-                updateStatus("Scanning local directory sector...", 5);
-                let files = [];
-                
-                async function scanDir(dirHandle, path) {
-                    for await (const entry of dirHandle.values()) {
-                        if (entry.kind === 'file' && !entry.name.startsWith('.')) {
-                            files.push({ handle: entry, parent: dirHandle, path: path + entry.name });
-                        } else if (entry.kind === 'directory' && document.getElementById('subdirs-check').checked) {
-                            await scanDir(entry, path + entry.name + '/');
-                        }
-                    }
-                }
-                await scanDir(rootDirectoryHandle, "");
-
-                if (files.length === 0) {
-                    container.innerHTML = "<span class='text-warning font-bold'>No files found to organize.</span>";
-                    isProcessing = false; initBtn.disabled = false; initBtn.classList.remove('opacity-50', 'cursor-not-allowed'); return;
-                }
-
-                updateStatus(`Extracting multimodal context from ${files.length} files...`, 15);
-                let sampleParts = [{ text: "Analyze the following files to propose organizational categories:\n" }];
-                const sampleSize = parseInt(document.getElementById('sample-size-input').value) || 20;
-                const shuffled = files.sort(() => 0.5 - Math.random()).slice(0, sampleSize);
-                
-                let multimodalAdded = 0;
-                for (let f of shuffled) {
-                    try {
-                        const file = await f.handle.getFile();
-                        const mime = getMimeTypeForGemini(f.handle.name);
-                        const isText = ['txt', 'md', 'csv', 'json', 'js', 'html', 'css', 'py'].includes(f.handle.name.split('.').pop().toLowerCase());
-                        
-                        sampleParts.push({ text: `\n--- File: ${f.handle.name} ---` });
-
-                        if (isText && file.size < 2000000) {
-                            const text = await file.slice(0, 1000).text();
-                            sampleParts.push({ text: `\nSnippet:\n${text.substring(0, 500)}\n` });
-                        } else if (mime && file.size < 4000000 && multimodalAdded < 5) {
-                            const b64 = await fileToBase64(file);
-                            sampleParts.push({ inlineData: { mimeType: mime, data: b64 } });
-                            multimodalAdded++;
-                        } else {
-                            sampleParts.push({ text: `\n[Binary or Large File - Rely on filename and extension for context]` });
-                        }
-                    } catch(e) { /* Ignore unreadable files */ }
-                }
-
-                let approvedCategories = [];
-                let rejectedCategories = [];
-                const maxCat = parseInt(document.getElementById('max-categories-input').value) || 5;
-                const hint = document.getElementById('oracle-hint-input').value || "General files";
-                
-                const genModel = document.getElementById('fallback-check').checked 
-                                    ? (localStorage.getItem('nexus_fallback_model') || document.getElementById('fallback-model-select').value)
-                                    : baseModel;
-
-                while (approvedCategories.length === 0) {
-                    updateStatus(`Querying AI Oracle (${genModel}) for optimal clusters...`, 30);
-                    
-                    let sysPrompt = `You are a master file organizer. Context: ${hint}. Based on the diverse content provided, propose between 1 and ${maxCat} distinct, broad folder categories.`;
-                    if (rejectedCategories.length > 0) {
-                        sysPrompt += `\nCRITICAL RESTRICTION: The user explicitly rejected these categories: ${JSON.stringify(rejectedCategories)}. Do NOT propose them again.`;
-                    }
-                    
-                    sampleParts.push({ text: `\nBased on all the files provided above, propose effective category names (1 to ${maxCat}). Context: '${hint}'.` });
-                    
-                    const proposedCategories = await callLLM(sampleParts, sysPrompt, genModel, true, false);
-
-                    const decision = await new Promise((resolve) => {
-                        let checkboxesHTML = proposedCategories.map((cat, idx) => `
-                            <div class="flex items-center gap-3 bg-[#2D2D2D] px-4 py-3 rounded-md border border-gray-600 w-full shadow-sm hover:border-brand transition">
-                                <input type="checkbox" id="cat-${idx}" value="${cat}" checked class="custom-checkbox cat-checkbox">
-                                <label for="cat-${idx}" class="text-white cursor-pointer flex-grow font-medium truncate">${cat}</label>
-                            </div>
-                        `).join('');
-
-                        container.innerHTML = `
-                            <div class="flex flex-col items-center gap-4 w-full py-2">
-                                <span class="text-brand font-bold text-xl mb-2">Proposed Clusters (Check to authorize):</span>
-                                <div class="flex flex-col gap-3 w-full max-w-lg px-2 max-h-72 overflow-y-auto custom-scrollbar">
-                                    ${checkboxesHTML}
-                                </div>
-                                <div class="flex flex-wrap gap-4 mt-6 justify-center w-full">
-                                    <button id="btn-approve" class="bg-[#4ade80] hover:bg-[#22c55e] text-black px-6 py-3 rounded-md font-bold transition shadow-lg text-lg">Authorize & Route Files</button>
-                                    <button id="btn-regenerate" class="bg-[#3A3A3A] hover:bg-[#555555] text-white px-6 py-3 rounded-md font-bold transition border border-gray-600">Recalibrate Unchecked</button>
-                                </div>
-                                <button id="btn-cancel" class="mt-2 text-danger hover:text-white transition text-sm font-semibold underline">Cancel Protocol</button>
-                            </div>
-                        `;
-
-                        document.getElementById('btn-approve').onclick = () => resolve({ action: 'approve', checked: Array.from(document.querySelectorAll('.cat-checkbox:checked')).map(cb => cb.value) });
-                        document.getElementById('btn-regenerate').onclick = () => resolve({ action: 'regenerate', unchecked: Array.from(document.querySelectorAll('.cat-checkbox:not(:checked)')).map(cb => cb.value) });
-                        document.getElementById('btn-cancel').onclick = () => resolve({ action: 'cancel' });
-                    });
-
-                    if (decision.action === 'cancel') {
-                        container.innerHTML = "<span class='text-warning font-bold text-center py-8 block'>Sort cancelled by user. Awaiting new instructions.</span>";
-                        isProcessing = false; initBtn.disabled = false; initBtn.classList.remove('opacity-50', 'cursor-not-allowed'); return;
-                    } else if (decision.action === 'regenerate') {
-                        if(decision.unchecked.length > 0) rejectedCategories.push(...decision.unchecked);
-                        sampleParts.pop(); 
-                    } else if (decision.action === 'approve') {
-                        if (decision.checked.length === 0) { showToast("Please authorize at least one category.", "warning"); continue; }
-                        approvedCategories = decision.checked;
-                    }
-                }
-
-                const useFallback = document.getElementById('fallback-check').checked;
-                const threshold = parseInt(document.getElementById('threshold-input').value) || 90;
-                const fallbackModel = localStorage.getItem('nexus_fallback_model') || document.getElementById('fallback-model-select').value;
-                
-                let processed = 0;
-                for (let f of files) {
-                    processed++;
-                    let currentProgress = 40 + Math.floor((processed / files.length) * 60); // Math scales remaining progress from 40% to 100%
-                    
-                    updateStatus(`Sorting file ${processed} of ${files.length}: <br><span class="text-brand text-sm">${f.handle.name}</span>`, currentProgress);
-                    
-                    const sysPromptClassify = `You are a file classifier. Context: ${hint}. Choose the closest conceptual match from this exact list: ${JSON.stringify(approvedCategories)}. Make your absolute best guess based on the file content or name. Do not use 'Uncategorized' unless completely unrelated.`;
-                    
-                    let fileParts = [];
-                    const mime = getMimeTypeForGemini(f.handle.name);
-                    const isText = ['txt', 'md', 'csv', 'json', 'js', 'html', 'css', 'py'].includes(f.handle.name.split('.').pop().toLowerCase());
-
-                    try {
-                        const file = await f.handle.getFile();
-                        if (isText && file.size < 2000000) {
-                            fileParts.push({ text: `Snippet:\n${await file.slice(0, 1500).text()}` });
-                        } else if (mime && file.size < 4000000) { 
-                            const b64 = await fileToBase64(file);
-                            fileParts.push({ inlineData: { mimeType: mime, data: b64 } });
-                        } else {
-                            fileParts.push({ text: `[File content unavailable or too large. Rely entirely on the filename for context.]` });
-                        }
-                    } catch(e) {
-                         fileParts.push({ text: `[File content unreadable. Rely entirely on filename.]` });
-                    }
-
-                    fileParts.push({ text: `Classify this file. Filename: "${f.handle.name}"` });
-
-                    let baseResult = await callLLM(fileParts, sysPromptClassify, baseModel, false, true);
-                    let finalCategory = baseResult.category;
-                    let finalConfidence = parseInt(baseResult.confidence) || 0;
-
-                    if (useFallback && finalConfidence <= threshold) {
-                        updateStatus(`Escalating file ${processed} to Deep Analysis (${fallbackModel})...<br><span class="text-brand text-sm">${f.handle.name}</span>`, currentProgress);
-                        try {
-                            const fallbackResult = await callLLM(fileParts, sysPromptClassify, fallbackModel, false, true);
-                            finalCategory = fallbackResult.category;
-                        } catch(e) { console.warn("Fallback failed, using base result."); }
-                    }
-
-                    const lowerCategories = approvedCategories.map(c => c.toLowerCase());
-                    const matchIndex = lowerCategories.indexOf(finalCategory.toLowerCase());
-                    finalCategory = (matchIndex !== -1) ? approvedCategories[matchIndex] : "Uncategorized";
-
-                    const targetDirHandle = await rootDirectoryHandle.getDirectoryHandle(finalCategory, { create: true });
-                    try {
-                        if (f.handle.move) {
-                            await f.handle.move(targetDirHandle, f.handle.name);
-                        } else {
-                            const newFileHandle = await targetDirHandle.getFileHandle(f.handle.name, { create: true });
-                            const writable = await newFileHandle.createWritable();
-                            const fileData = await f.handle.getFile();
-                            await writable.write(fileData);
-                            await writable.close();
-                            await f.parent.removeEntry(f.handle.name);
-                        }
-                    } catch(e) { console.error(`Move failed for ${f.handle.name}`); }
-                }
-
-                updateStatus("Organization Complete!", 100);
-                setTimeout(() => {
-                    container.innerHTML = `<span class='text-[#4ade80] font-bold text-2xl text-center py-8 block'>Sort Complete! Organized ${files.length} files.</span>`;
-                }, 1000);
-                showToast("Organization complete!", "success");
-
-            } catch (err) {
-                console.error(err);
-                container.innerHTML = `<span class='text-danger font-bold text-center py-8 block'>Error: ${err.message}</span>`;
-            } finally {
-                isProcessing = false;
-                initBtn.disabled = false;
-                initBtn.classList.remove('opacity-50', 'cursor-not-allowed');
-            }
-        }
-
-        function simulateScan() {
-            if (!rootDirectoryHandle) { showToast("Please link a Local Sector first.", "warning"); return; }
-            const isLocal = document.getElementById('local-process-check').checked;
-            const container = document.getElementById('dedupe-status-container');
-            
-            let progress = 0;
-            const msg = isLocal ? 'Hashing files locally via Web Crypto API...' : 'Establishing secure link to Nexus Oracle...';
-            
-            const updateUi = () => {
-                container.innerHTML = `
-                    <div class="flex flex-col items-center gap-4 py-16 w-full max-w-md mx-auto">
-                        ${progress < 100 ? '<svg class="animate-spin h-10 w-10 text-brand" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>' : ''}
-                        <span class="text-white font-semibold text-center text-lg">${progress < 100 ? msg : 'Vault Mapping Complete.'}</span>
-                        <div class="w-full bg-[#3A3A3A] rounded-full h-3 mt-4 overflow-hidden shadow-inner border border-gray-600">
-                            <div class="bg-brand h-3 rounded-full transition-all duration-300" style="width: ${progress}%"></div>
-                        </div>
-                    </div>
-                `;
-            };
-            
-            updateUi();
-            
-            const interval = setInterval(() => {
-                progress += Math.floor(Math.random() * 15) + 5;
-                if (progress >= 100) {
-                    progress = 100;
-                    clearInterval(interval);
-                    updateUi();
-                    setTimeout(() => {
-                        container.innerHTML = "<span class='text-[#4ade80] font-bold text-xl text-center py-20 block'>Deep Scan Simulation Complete!</span>";
-                    }, 1000);
-                } else {
-                    updateUi();
-                }
-            }, 600);
-        }
-
-        const instructions = {
-            gemini: `
-                <ol class="list-decimal pl-4 space-y-1">
-                    <li>Go to the <a href="https://aistudio.google.com/app/apikey" target="_blank" class="text-brand hover:underline">Google AI Studio</a>.</li>
-                    <li>Sign in with your Google account.</li>
-                    <li>Click <strong>Create API Key</strong>.</li>
-                    <li>Paste the key below.</li>
-                </ol>
-            `,
-            openai: `
-                <ol class="list-decimal pl-4 space-y-1">
-                    <li>Go to <a href="https://platform.openai.com/api-keys" target="_blank" class="text-brand hover:underline">OpenAI API Keys</a>.</li>
-                    <li>Sign in and create a new secret key.</li>
-                    <li>Paste the key below.</li>
-                </ol>
-            `,
-            claude: `
-                <div class="text-danger font-bold mb-1 flex items-center gap-2">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
-                    Advanced Setup Required
-                </div>
-                <p class="mb-2 text-xs">Anthropic blocks browsers from making direct API calls. You must deploy a tiny, free proxy server on your Cloudflare account to route requests securely.</p>
-            `
-        };
-
-        function updateApiInstructions() {
-            const provider = document.getElementById('api-provider').value;
-            document.getElementById('instructions-box').innerHTML = instructions[provider];
-            document.getElementById('proxy-input-group').classList.toggle('hidden', provider !== 'claude');
         }
 
         function openApiModal() {
@@ -876,11 +379,19 @@
             const content = document.getElementById('api-modal-content');
             
             document.getElementById('api-provider').value = localStorage.getItem('nexus_api_provider') || 'gemini';
-            updateApiInstructions();
             document.getElementById('api-key').value = localStorage.getItem('nexus_api_key') || '';
-            document.getElementById('proxy-url').value = localStorage.getItem('nexus_proxy_url') || '';
             
-            populateModelDropdown(document.getElementById('api-provider').value);
+            const savedPrimary = localStorage.getItem('nexus_primary_model');
+            const savedFallback = localStorage.getItem('nexus_fallback_model');
+            
+            if(savedPrimary) {
+                const pSelect = document.getElementById('primary-model-select');
+                pSelect.innerHTML = `<option value="${savedPrimary}">${savedPrimary} (Saved)</option>`;
+            }
+            if(savedFallback) {
+                const fSelect = document.getElementById('fallback-model-select');
+                fSelect.innerHTML = `<option value="${savedFallback}">${savedFallback} (Saved)</option>`;
+            }
 
             modal.classList.remove('hidden');
             void modal.offsetWidth;
@@ -893,28 +404,7 @@
             const content = document.getElementById('api-modal-content');
             modal.classList.add('opacity-0');
             content.classList.add('scale-95');
-            setTimeout(() => modal.classList.add('hidden'), 300); 
-        }
-
-        function saveApiSettings() {
-            const provider = document.getElementById('api-provider').value;
-            const key = document.getElementById('api-key').value.trim();
-            const proxy = document.getElementById('proxy-url').value.trim();
-            const baseModel = document.getElementById('base-model-select').value;
-            const fallbackModel = document.getElementById('fallback-model-select').value;
-
-            if (!key) { showToast("Please enter an API key.", "error"); return; }
-            if (provider === 'claude' && !proxy) { showToast("Cloudflare Proxy URL is required for Claude.", "error"); return; }
-            if (!baseModel) { showToast("Please fetch and select models.", "error"); return; }
-
-            localStorage.setItem('nexus_api_provider', provider);
-            localStorage.setItem('nexus_api_key', key);
-            localStorage.setItem('nexus_proxy_url', proxy);
-            localStorage.setItem('nexus_base_model', baseModel);
-            localStorage.setItem('nexus_fallback_model', fallbackModel);
-
-            showToast("AI Configuration saved securely.", "success");
-            closeApiModal();
+            setTimeout(() => { modal.classList.add('hidden'); }, 300);
         }
 
         function togglePassword() {
@@ -922,10 +412,648 @@
             input.type = input.type === 'password' ? 'text' : 'password';
         }
 
-        document.addEventListener('DOMContentLoaded', () => {
-            updateApiInstructions();
-            if (!localStorage.getItem('nexus_api_key')) setTimeout(openApiModal, 500);
-        });
+        async function refreshModels() {
+            const provider = document.getElementById('api-provider').value;
+            const apiKey = document.getElementById('api-key').value.trim();
+            if (!apiKey) {
+                showToast("Enter an API key to fetch models.", "warning");
+                return;
+            }
+
+            const primarySelect = document.getElementById('primary-model-select');
+            const fallbackSelect = document.getElementById('fallback-model-select');
+            primarySelect.innerHTML = `<option>Fetching...</option>`;
+            fallbackSelect.innerHTML = `<option>Fetching...</option>`;
+
+            try {
+                let models = [];
+                if (provider === 'gemini') {
+                    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`);
+                    if (!res.ok) throw new Error("Invalid Google API Key or Network Error");
+                    const data = await res.json();
+                    
+                    // Filter for standard multimodal generateContent endpoints
+                    models = data.models
+                        .filter(m => m.supportedGenerationMethods && m.supportedGenerationMethods.includes("generateContent"))
+                        .map(m => m.name.replace('models/', ''));
+                        
+                } else if (provider === 'openai') {
+                    const res = await fetch(`https://api.openai.com/v1/models`, {
+                        headers: { 'Authorization': `Bearer ${apiKey}` }
+                    });
+                    if (!res.ok) throw new Error("Invalid OpenAI API Key");
+                    const data = await res.json();
+                    models = data.data.map(m => m.id).filter(id => id.includes("gpt"));
+                }
+
+                if (models.length === 0) throw new Error("No compatible multimodal models found.");
+
+                // Smart Scoring Algorithm
+                let bestPrimary = models[0];
+                let bestFallback = models[0];
+                let maxPrimaryScore = -1;
+                let maxFallbackScore = -1;
+
+                models.forEach(m => {
+                    const name = m.toLowerCase();
+                    let pScore = 0;
+                    let fScore = 0;
+                    
+                    // Version extraction (e.g., 1.5, 2.0, 3.1)
+                    const versionMatch = name.match(/[\d.]+/);
+                    const versionStr = versionMatch ? versionMatch[0] : "0";
+                    const versionNum = parseFloat(versionStr) || 0;
+                    
+                    pScore += versionNum * 10;
+                    fScore += versionNum * 10;
+
+                    if (name.includes('flash') || name.includes('mini') || name.includes('haiku')) {
+                        pScore += 50; 
+                        fScore -= 20; 
+                    }
+                    if (name.includes('pro') || name.includes('opus') || name.includes('gpt-4') || name.includes('gpt-5')) {
+                        fScore += 50; 
+                        pScore -= 20; 
+                    }
+                    if (name.includes('vision')) { pScore += 10; fScore += 10; }
+
+                    if (pScore > maxPrimaryScore) { maxPrimaryScore = pScore; bestPrimary = m; }
+                    if (fScore > maxFallbackScore) { maxFallbackScore = fScore; bestFallback = m; }
+                });
+
+                primarySelect.innerHTML = models.map(m => `<option value="${m}" ${m === bestPrimary ? 'selected' : ''}>${m}</option>`).join('');
+                fallbackSelect.innerHTML = models.map(m => `<option value="${m}" ${m === bestFallback ? 'selected' : ''}>${m}</option>`).join('');
+                
+                showToast(`Successfully fetched ${models.length} models!`, "success");
+
+            } catch (err) {
+                primarySelect.innerHTML = `<option value="">Error fetching models</option>`;
+                fallbackSelect.innerHTML = `<option value="">Error fetching models</option>`;
+                showToast(err.message, "error");
+            }
+        }
+
+        function saveApiSettings() {
+            const provider = document.getElementById('api-provider').value;
+            const key = document.getElementById('api-key').value.trim();
+            const primary = document.getElementById('primary-model-select').value;
+            const fallback = document.getElementById('fallback-model-select').value;
+
+            if (!key) { showToast("API key is required.", "error"); return; }
+            if (!primary || !fallback) { showToast("Please fetch and select models.", "error"); return; }
+
+            localStorage.setItem('nexus_api_provider', provider);
+            localStorage.setItem('nexus_api_key', key);
+            localStorage.setItem('nexus_primary_model', primary);
+            localStorage.setItem('nexus_fallback_model', fallback);
+
+            showToast("AI Configuration saved securely.", "success");
+            closeApiModal();
+        }
+
+        async function getFileContentForAI(fileHandle) {
+            try {
+                const file = await fileHandle.getFile();
+                if (file.size > 15000000) {
+                    return { text: `Filename: ${file.name}\n[File too large for analysis (>15MB)]` };
+                }
+                
+                const type = file.type || '';
+                const ext = file.name.split('.').pop().toLowerCase();
+                const textExtensions = ['txt','md','js','py','html','css','json','csv'];
+                
+                // Read as Text
+                if (type.startsWith('text/') || type === 'application/json' || textExtensions.includes(ext)) {
+                    const text = await file.slice(0, 5000).text();
+                    return { text: `Filename: ${file.name}\nContent snippet:\n${text.substring(0, 1500)}` };
+                } 
+                // Read as Base64 (Multimodal)
+                else if (type.startsWith('image/') || type === 'application/pdf') {
+                    return new Promise((resolve) => {
+                        const reader = new FileReader();
+                        reader.onloadend = () => {
+                            const base64 = reader.result.split(',')[1];
+                            resolve({
+                                inlineData: { data: base64, mimeType: type || (ext==='pdf'?'application/pdf':'image/jpeg') }
+                            });
+                        };
+                        reader.readAsDataURL(file);
+                    });
+                }
+                // Fallback for binaries
+                return { text: `Filename: ${file.name}\n[Binary or unrecognized format. Classify conceptually based on filename.]` };
+            } catch(e) {
+                return { text: `Filename: ${fileHandle.name}\n[Error reading file contents]` };
+            }
+        }
+
+        async function callLLM(model, systemInstruction, parts, jsonSchema = null) {
+            const apiKey = localStorage.getItem('nexus_api_key');
+            if (!apiKey) throw new Error("API Key missing");
+            
+            const payload = {
+                contents: [{ parts: parts }],
+                systemInstruction: { parts: [{ text: systemInstruction }] },
+                generationConfig: {}
+            };
+            
+            if (jsonSchema) {
+                payload.generationConfig.responseMimeType = "application/json";
+                payload.generationConfig.responseSchema = jsonSchema;
+            }
+
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+            
+            // Retry logic
+            for (let attempt = 1; attempt <= 3; attempt++) {
+                try {
+                    const response = await fetch(url, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    
+                    if (response.status === 429) {
+                        await new Promise(r => setTimeout(r, 1000 * attempt));
+                        continue;
+                    }
+                    
+                    if (!response.ok) {
+                        const errData = await response.json().catch(()=>({}));
+                        throw new Error(errData.error?.message || `HTTP ${response.status}`);
+                    }
+                    
+                    const data = await response.json();
+                    if (!data.candidates || !data.candidates[0].content) throw new Error("Invalid API response format");
+                    
+                    return data.candidates[0].content.parts[0].text;
+                } catch (e) {
+                    if (attempt === 3) throw e;
+                }
+            }
+        }
+
+        function setOrganizerProgress(pct, text) {
+            document.getElementById('organizer-dynamic-ui').classList.remove('hidden');
+            document.getElementById('organizer-status-fallback').classList.add('hidden');
+            
+            const bar = document.getElementById('organizer-progress-bar');
+            const pctText = document.getElementById('organizer-progress-pct');
+            const statusText = document.getElementById('organizer-progress-text');
+            
+            if (bar) bar.style.width = `${Math.min(100, Math.max(0, pct))}%`;
+            if (pctText) pctText.innerText = `${Math.round(pct)}%`;
+            if (statusText && text) statusText.innerText = text;
+        }
+
+        async function runActualAnalysis() {
+            if (!rootDirectoryHandle) { showToast("Please link a Target Node first.", "warning"); return; }
+            if (!localStorage.getItem('nexus_primary_model')) { showToast("Please configure AI Settings first.", "error"); openApiModal(); return; }
+
+            document.getElementById('init-sort-btn').disabled = true;
+            document.getElementById('init-sort-btn').classList.add('opacity-50');
+            document.getElementById('category-approval-section').classList.add('hidden');
+            
+            try {
+                setOrganizerProgress(5, "Scanning directory structure...");
+                globalFilesToClassify = [];
+                const includeSubdirs = document.getElementById('subdirs-check').checked;
+                
+                async function scanDir(dirHandle, path) {
+                    for await (const entry of dirHandle.values()) {
+                        if (entry.kind === 'file' && !entry.name.startsWith('.')) {
+                            globalFilesToClassify.push({ handle: entry, parent: dirHandle, path: path + entry.name });
+                        } else if (entry.kind === 'directory' && includeSubdirs && entry.name !== 'Uncategorized') {
+                            await scanDir(entry, path + entry.name + '/');
+                        }
+                    }
+                }
+                await scanDir(rootDirectoryHandle, "");
+
+                if (globalFilesToClassify.length === 0) {
+                    setOrganizerProgress(100, "Node is empty. Nothing to organize.");
+                    return;
+                }
+
+                setOrganizerProgress(15, "Extracting Multimodal Samples...");
+                const sampleSize = parseInt(document.getElementById('sample-size-input').value) || 20;
+                const shuffled = [...globalFilesToClassify].sort(() => 0.5 - Math.random()).slice(0, sampleSize);
+                
+                let parts = [{ text: "Analyze these file samples to propose categories:\n" }];
+                for (let i = 0; i < shuffled.length; i++) {
+                    setOrganizerProgress(15 + (i/shuffled.length)*15, `Extracting sample ${i+1}/${shuffled.length}...`);
+                    const content = await getFileContentForAI(shuffled[i].handle);
+                    if (content) parts.push(content);
+                }
+
+                setOrganizerProgress(35, "Querying AI for optimal cluster maps...");
+                const hint = document.getElementById('oracle-hint-input').value;
+                const maxClusters = parseInt(document.getElementById('max-clusters-input').value) || 5;
+                const primaryModel = localStorage.getItem('nexus_primary_model');
+                
+                const sysPrompt = `You are an expert file organizer. Context: ${hint}. Propose 2 to ${maxClusters} general folder categories that best encapsulate these files. Respond with a valid JSON array of strings.`;
+                const schema = { type: "ARRAY", items: { type: "STRING" } };
+                
+                const responseText = await callLLM(primaryModel, sysPrompt, parts, schema);
+                let categories = JSON.parse(responseText);
+                
+                // Sanitize categories
+                categories = categories.map(c => c.replace(/[<>:"/\\|?*]/g, '').trim()).filter(c => c.length > 0);
+                
+                renderCategoryApproval(categories);
+
+            } catch (err) {
+                console.error(err);
+                setOrganizerProgress(0, `Error: ${err.message}`);
+                showToast(`Analysis failed: ${err.message}`, "error");
+            } finally {
+                document.getElementById('init-sort-btn').disabled = false;
+                document.getElementById('init-sort-btn').classList.remove('opacity-50');
+            }
+        }
+
+        function renderCategoryApproval(categories) {
+            setOrganizerProgress(40, "Awaiting User Authorization");
+            const listEl = document.getElementById('category-checkbox-list');
+            listEl.innerHTML = '';
+            
+            categories.forEach((cat, idx) => {
+                const id = `cat-chk-${idx}`;
+                listEl.innerHTML += `
+                    <div class="flex items-center gap-3 hover:bg-[#3A3A3A] p-2 rounded transition">
+                        <input type="checkbox" id="${id}" value="${cat}" checked class="custom-checkbox flex-shrink-0">
+                        <label for="${id}" class="text-gray-200 cursor-pointer flex-grow select-none">${cat}</label>
+                    </div>
+                `;
+            });
+            
+            document.getElementById('category-approval-section').classList.remove('hidden');
+            
+            // Auto-scroll to approval section
+            document.getElementById('category-approval-section').scrollIntoView({ behavior: 'smooth', block: 'end' });
+        }
+
+        async function recalibrateCategories() {
+            const checkboxes = document.querySelectorAll('#category-checkbox-list input[type="checkbox"]');
+            const rejected = Array.from(checkboxes).filter(cb => !cb.checked).map(cb => cb.value);
+            
+            if (rejected.length === 0) {
+                showToast("Uncheck at least one category to recalibrate.", "warning");
+                return;
+            }
+            
+            // Add rejection context to the hint and re-run (simplified for web)
+            const hintInput = document.getElementById('oracle-hint-input');
+            const originalHint = hintInput.value;
+            hintInput.value = `${originalHint} DO NOT USE THESE CATEGORIES: ${rejected.join(', ')}`.trim();
+            
+            await runActualAnalysis();
+            
+            // Restore original hint visually
+            hintInput.value = originalHint;
+        }
+
+        async function approveCategoriesAndSort() {
+            const checkboxes = document.querySelectorAll('#category-checkbox-list input[type="checkbox"]');
+            globalApprovedCategories = Array.from(checkboxes).filter(cb => cb.checked).map(cb => cb.value);
+            
+            if (globalApprovedCategories.length === 0) {
+                showToast("You must approve at least one category.", "error");
+                return;
+            }
+            
+            document.getElementById('category-approval-section').classList.add('hidden');
+            
+            const primaryModel = localStorage.getItem('nexus_primary_model');
+            const fallbackModel = localStorage.getItem('nexus_fallback_model');
+            const useFallback = document.getElementById('escalate-check').checked;
+            const threshold = parseInt(document.getElementById('confidence-threshold').value) || 90;
+            
+            const sysPrompt = `You are a file classifier. Select the closest conceptual match from this exact array: ${JSON.stringify(globalApprovedCategories)}. If text contains binary garbage (like ), ignore it and guess based on filename. Only use "Uncategorized" if absolutely impossible to guess.`;
+            const schema = { 
+                type: "OBJECT", 
+                properties: { category: { type: "STRING" }, confidence: { type: "INTEGER" } }, 
+                required: ["category", "confidence"] 
+            };
+
+            let successCount = 0;
+            let uncatCount = 0;
+
+            for (let i = 0; i < globalFilesToClassify.length; i++) {
+                const f = globalFilesToClassify[i];
+                const progressPct = 40 + ((i / globalFilesToClassify.length) * 60);
+                setOrganizerProgress(progressPct, `Routing ${i+1}/${globalFilesToClassify.length}: ${f.handle.name}`);
+                
+                try {
+                    const content = await getFileContentForAI(f.handle);
+                    let targetCategory = "Uncategorized";
+                    let isClassified = false;
+
+                    // 1. Try Primary Model
+                    try {
+                        const res = await callLLM(primaryModel, sysPrompt, [content], schema);
+                        const parsed = JSON.parse(res);
+                        
+                        if (useFallback && parsed.confidence < threshold) {
+                            throw new Error("Confidence too low");
+                        }
+                        targetCategory = parsed.category;
+                        isClassified = true;
+                    } catch (e) {
+                        // 2. Try Fallback Model if enabled/needed
+                        if (useFallback) {
+                            try {
+                                const resFall = await callLLM(fallbackModel, sysPrompt, [content], schema);
+                                targetCategory = JSON.parse(resFall).category;
+                                isClassified = true;
+                            } catch (fallbackErr) {
+                                console.warn("Fallback model also failed:", fallbackErr);
+                            }
+                        }
+                    }
+                    
+                    // Validate category
+                    if (!globalApprovedCategories.includes(targetCategory)) targetCategory = "Uncategorized";
+                    
+                    if (targetCategory === "Uncategorized") uncatCount++; else successCount++;
+
+                    // Move File natively
+                    const targetDirHandle = await rootDirectoryHandle.getDirectoryHandle(targetCategory, { create: true });
+                    
+                    // Edge Chromium supports native move, others require copy/delete
+                    if (f.handle.move) {
+                        await f.handle.move(targetDirHandle, f.handle.name);
+                    } else {
+                        const newFileHandle = await targetDirHandle.getFileHandle(f.handle.name, { create: true });
+                        const writable = await newFileHandle.createWritable();
+                        const fileData = await f.handle.getFile();
+                        await writable.write(fileData);
+                        await writable.close();
+                        await f.parent.removeEntry(f.handle.name);
+                    }
+
+                } catch(e) {
+                    console.error(`Move failed for ${f.handle.name}`, e);
+                    uncatCount++;
+                }
+            }
+
+            setOrganizerProgress(100, `Sort Complete! ${successCount} routed, ${uncatCount} quarantined.`);
+            showToast("Protocol Complete", "success");
+        }
+
+        let globalDuplicateSets = [];
+
+        function formatBytes(bytes) {
+            if (bytes === 0) return '0 B';
+            const k = 1024;
+            const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        function setDedupeProgress(pct, text) {
+            document.getElementById('dedupe-dynamic-ui').classList.remove('hidden');
+            document.getElementById('dedupe-status').classList.remove('mt-20');
+            
+            const bar = document.getElementById('dedupe-progress-bar');
+            const pctText = document.getElementById('dedupe-progress-pct');
+            const statusText = document.getElementById('dedupe-progress-text');
+            
+            if (bar) bar.style.width = `${Math.min(100, Math.max(0, pct))}%`;
+            if (pctText) pctText.innerText = `${Math.round(pct)}%`;
+            if (statusText && text) statusText.innerText = text;
+        }
+
+        async function runActualDeduplication() {
+            if (!rootDirectoryHandle) { showToast("Please link a Sector first.", "warning"); return; }
+
+            const btn = document.getElementById('btn-init-dedupe');
+            btn.disabled = true;
+            btn.classList.add('opacity-50');
+            document.getElementById('dedupe-status').innerHTML = ''; // clear previous
+            
+            try {
+                // STAGE 1: Mapping & Size Grouping
+                setDedupeProgress(5, "Stage 1: Mapping the Sectors...");
+                const fileList = [];
+                async function getFiles(dirHandle, path = '') {
+                    for await (const entry of dirHandle.values()) {
+                        if (entry.kind === 'file' && !entry.name.startsWith('.')) {
+                            const file = await entry.getFile();
+                            fileList.push({ handle: entry, parent: dirHandle, path: path + entry.name, file: file, size: file.size });
+                        } else if (entry.kind === 'directory') {
+                            await getFiles(entry, path + entry.name + '/');
+                        }
+                    }
+                }
+                await getFiles(rootDirectoryHandle);
+                
+                const sizeGroups = new Map();
+                fileList.forEach(f => {
+                    if (!sizeGroups.has(f.size)) sizeGroups.set(f.size, []);
+                    sizeGroups.get(f.size).push(f);
+                });
+                
+                let potentialDupes = [];
+                for (const group of sizeGroups.values()) {
+                    if (group.length > 1 && group[0].size > 0) potentialDupes.push(...group);
+                }
+
+                if (potentialDupes.length === 0) {
+                    setDedupeProgress(100, "Sector mapping complete.");
+                    document.getElementById('dedupe-status').innerHTML = `<span class='text-[#4ade80] font-bold text-xl'>Sector is completely clean. No duplicates found!</span>`;
+                    return;
+                }
+
+                // STAGE 2: Signal Filtering (Partial Hash - First 16KB)
+                const partialGroups = new Map();
+                for (let i = 0; i < potentialDupes.length; i++) {
+                    const f = potentialDupes[i];
+                    const pct = 15 + ((i / potentialDupes.length) * 35);
+                    setDedupeProgress(pct, `Stage 2: Partial Hash Filtering (${i+1}/${potentialDupes.length})...`);
+                    
+                    const slice = f.file.slice(0, 16384); 
+                    const buffer = await slice.arrayBuffer();
+                    const hashBuffer = await crypto.subtle.digest('SHA-256', buffer);
+                    const hashArray = Array.from(new Uint8Array(hashBuffer));
+                    const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+                    
+                    const key = `${f.size}_${hashHex}`;
+                    if (!partialGroups.has(key)) partialGroups.set(key, []);
+                    partialGroups.get(key).push(f);
+                }
+
+                let finalCandidates = [];
+                for (const group of partialGroups.values()) {
+                    if (group.length > 1) finalCandidates.push(...group);
+                }
+
+                if (finalCandidates.length === 0) {
+                    setDedupeProgress(100, "Filtering complete.");
+                    document.getElementById('dedupe-status').innerHTML = `<span class='text-[#4ade80] font-bold text-xl'>Sector is completely clean. No duplicates found!</span>`;
+                    return;
+                }
+
+                // STAGE 3: Deep Core Synthesis (Full File Hash)
+                const finalGroups = new Map();
+                for (let i = 0; i < finalCandidates.length; i++) {
+                    const f = finalCandidates[i];
+                    const pct = 50 + ((i / finalCandidates.length) * 50);
+                    setDedupeProgress(pct, `Stage 3: Deep Core Synthesis (${i+1}/${finalCandidates.length})...`);
+                    
+                    const buffer = await f.file.arrayBuffer();
+                    const hashBuffer = await crypto.subtle.digest('SHA-256', buffer);
+                    const hashArray = Array.from(new Uint8Array(hashBuffer));
+                    const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+                    
+                    if (!finalGroups.has(hashHex)) finalGroups.set(hashHex, []);
+                    finalGroups.get(hashHex).push(f);
+                }
+
+                globalDuplicateSets = [];
+                for (const group of finalGroups.values()) {
+                    if (group.length > 1) {
+                        // Smart Sort: Penalize files with (1), "copy", etc., to automatically mark them for deletion
+                        group.sort((a, b) => {
+                            const scoreA = (a.path.toLowerCase().includes('copy') || /\(\d+\)/.test(a.path)) ? 1 : 0;
+                            const scoreB = (b.path.toLowerCase().includes('copy') || /\(\d+\)/.test(b.path)) ? 1 : 0;
+                            return scoreA - scoreB || a.path.length - b.path.length;
+                        });
+                        globalDuplicateSets.push(group);
+                    }
+                }
+
+                setDedupeProgress(100, "Synthesis complete.");
+
+                if (globalDuplicateSets.length === 0) {
+                    document.getElementById('dedupe-status').innerHTML = `<span class='text-[#4ade80] font-bold text-xl'>Sector is completely clean. No duplicates found!</span>`;
+                } else {
+                    renderDuplicateResults();
+                }
+
+            } catch (err) {
+                console.error(err);
+                document.getElementById('dedupe-status').innerHTML = `<span class='text-danger font-bold'>Error during deep scan: ${err.message}</span>`;
+            } finally {
+                btn.disabled = false;
+                btn.classList.remove('opacity-50');
+            }
+        }
+
+        function renderDuplicateResults() {
+            const statusEl = document.getElementById('dedupe-status');
+            
+            let totalWastedSpace = 0;
+            globalDuplicateSets.forEach(group => { totalWastedSpace += group[0].size * (group.length - 1); });
+
+            let html = `
+                <div class="text-left w-full animate-fade-in mt-4">
+                    <div class="flex flex-col sm:flex-row justify-between sm:items-end border-b border-gray-600 pb-4 mb-4 gap-4">
+                        <div>
+                            <h3 class="text-2xl font-bold text-white">Clusters Synthesized: ${globalDuplicateSets.length}</h3>
+                            <p class="text-[#4ade80] font-semibold tracking-wide">Recoverable Space: ${formatBytes(totalWastedSpace)}</p>
+                        </div>
+                        <button onclick="requestDeleteConfirmation()" class="bg-danger hover:bg-[#F28B82] text-[#121212] px-6 py-2 rounded-md font-bold transition shadow-md flex items-center justify-center gap-2">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                            Obliterate Selected
+                        </button>
+                    </div>
+                    <div class="max-h-[400px] overflow-y-auto space-y-6 pr-4">
+            `;
+
+            globalDuplicateSets.forEach((group, groupIndex) => {
+                html += `
+                    <div class="bg-surface p-4 rounded-lg border border-gray-700 shadow-sm" id="dupe-cluster-${groupIndex}">
+                        <div class="text-sm font-semibold text-textMuted mb-3 border-b border-gray-700 pb-2 flex justify-between">
+                            <span>Cluster Hash: <span class="font-mono text-gray-400">${crypto.randomUUID().substring(0,12).toUpperCase()}</span></span>
+                            <span>File Size: <span class="text-gray-300">${formatBytes(group[0].size)}</span></span>
+                        </div>
+                        <div class="space-y-2">
+                `;
+                
+                group.forEach((fileObj, fileIndex) => {
+                    const isChecked = fileIndex > 0 ? "checked" : "";
+                    const badge = fileIndex === 0 ? `<span class="bg-brand/20 text-brand px-2 py-0.5 rounded text-xs ml-3 border border-brand/30 uppercase tracking-wider font-bold">Original</span>` : '';
+                    
+                    html += `
+                        <div class="flex items-center gap-3 hover:bg-[#3A3A3A] p-2.5 rounded transition border border-transparent hover:border-gray-600" id="dupe-row-${groupIndex}-${fileIndex}">
+                            <input type="checkbox" id="dupe-${groupIndex}-${fileIndex}" class="custom-checkbox flex-shrink-0" ${isChecked}>
+                            <label for="dupe-${groupIndex}-${fileIndex}" class="text-sm text-gray-200 break-all cursor-pointer flex-grow font-medium">
+                                ${fileObj.path} ${badge}
+                            </label>
+                        </div>
+                    `;
+                });
+                html += `</div></div>`;
+            });
+
+            html += `</div></div>`;
+            statusEl.innerHTML = html;
+        }
+
+        function requestDeleteConfirmation() {
+            const checkboxes = document.querySelectorAll('input[id^="dupe-"]');
+            let count = 0;
+            checkboxes.forEach(cb => { if (cb.checked) count++; });
+
+            if (count === 0) {
+                showToast("No files selected for deletion.", "warning");
+                return;
+            }
+
+            document.getElementById('delete-modal-text').innerText = `You are about to permanently obliterate ${count} files from your hard drive. This cannot be undone. Proceed?`;
+            
+            const modal = document.getElementById('delete-modal');
+            const content = document.getElementById('delete-modal-content');
+            
+            modal.classList.remove('hidden');
+            void modal.offsetWidth;
+            modal.classList.remove('opacity-0');
+            content.classList.remove('scale-95');
+        }
+
+        function closeDeleteModal(executeDelete) {
+            const modal = document.getElementById('delete-modal');
+            const content = document.getElementById('delete-modal-content');
+            
+            modal.classList.add('opacity-0');
+            content.classList.add('scale-95');
+            
+            setTimeout(async () => {
+                modal.classList.add('hidden');
+                if (executeDelete) {
+                    await executeDeletion();
+                }
+            }, 200);
+        }
+
+        async function executeDeletion() {
+            const checkboxes = document.querySelectorAll('input[id^="dupe-"]');
+            const toDelete = [];
+
+            checkboxes.forEach(cb => {
+                if (cb.checked) {
+                    const parts = cb.id.split('-');
+                    toDelete.push({ group: parseInt(parts[1]), file: parseInt(parts[2]), el: cb });
+                }
+            });
+
+            let successCount = 0;
+            for (const item of toDelete) {
+                const f = globalDuplicateSets[item.group][item.file];
+                try {
+                    await f.parent.removeEntry(f.handle.name);
+                    successCount++;
+                    // Visually remove row
+                    const row = document.getElementById(`dupe-row-${item.group}-${item.file}`);
+                    if(row) row.style.opacity = '0.3';
+                } catch (e) {
+                    console.error("Failed to delete", f.path, e);
+                }
+            }
+            showToast(`Successfully obliterated ${successCount} duplicate files.`, "success");
+        }
 
     </script>
 </body>
