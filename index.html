@@ -208,7 +208,7 @@
 
             <button onclick="simulateScan()" class="w-full bg-brand hover:bg-brandHover text-white px-8 py-3 rounded-md font-bold text-lg transition shadow-lg">Initiate Deep Scan</button>
             
-            <div class="bg-card p-6 rounded-xl shadow-lg border border-surface min-h-[300px]">
+            <div class="bg-card p-6 rounded-xl shadow-lg border border-surface min-h-[300px]" id="dedupe-status-container">
                 <p class="text-textMuted text-center mt-20" id="dedupe-status">Data Vault is active. Link a sector to begin.</p>
             </div>
         </section>
@@ -326,6 +326,16 @@
             settingsDiv.style.pointerEvents = isChecked ? "auto" : "none";
         }
 
+        function toggleOracleSettings() {
+            const isChecked = document.getElementById('local-process-check').checked;
+            const settingsDiv = document.getElementById('oracle-settings');
+            if (isChecked) {
+                settingsDiv.classList.add('hidden');
+            } else {
+                settingsDiv.classList.remove('hidden');
+            }
+        }
+
         async function refreshModels() {
             const provider = document.getElementById('api-provider').value;
             const key = document.getElementById('api-key').value.trim();
@@ -346,8 +356,6 @@
                     if (!res.ok) throw new Error(`Gemini API Error: ${res.status} ${res.statusText}`);
                     const data = await res.json();
                     
-                    // CRITICAL FIX: Only include models that actually have the 'gemini' naming architecture 
-                    // and actively support the 'generateContent' method. This filters out interaction-only models.
                     availableModels = data.models
                         .filter(m => m.supportedGenerationMethods && m.supportedGenerationMethods.includes('generateContent') && m.name.toLowerCase().includes('gemini'))
                         .map(m => ({ id: m.name.replace('models/', ''), name: m.displayName || m.name.replace('models/', '') }));
@@ -584,17 +592,26 @@
             const initBtn = document.getElementById('btn-initiate');
             initBtn.disabled = true; initBtn.classList.add('opacity-50', 'cursor-not-allowed');
 
-            const updateStatus = (msg) => {
+            const updateStatus = (msg, progress = null) => {
+                let progressHtml = '';
+                if (progress !== null) {
+                    progressHtml = `
+                        <div class="w-full max-w-lg bg-[#3A3A3A] rounded-full h-3 mt-4 overflow-hidden shadow-inner border border-gray-600">
+                            <div class="bg-brand h-3 rounded-full transition-all duration-300" style="width: ${progress}%"></div>
+                        </div>
+                    `;
+                }
                 container.innerHTML = `
                     <div class="flex flex-col items-center gap-4 py-8 w-full">
-                        <svg class="animate-spin h-10 w-10 text-brand" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                        ${progress === null || progress < 100 ? '<svg class="animate-spin h-10 w-10 text-brand" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>' : ''}
                         <span class="text-white font-semibold text-center text-lg">${msg}</span>
+                        ${progressHtml}
                     </div>
                 `;
             };
 
             try {
-                updateStatus("Scanning local directory sector...");
+                updateStatus("Scanning local directory sector...", 5);
                 let files = [];
                 
                 async function scanDir(dirHandle, path) {
@@ -613,7 +630,7 @@
                     isProcessing = false; initBtn.disabled = false; initBtn.classList.remove('opacity-50', 'cursor-not-allowed'); return;
                 }
 
-                updateStatus(`Extracting multimodal context from ${files.length} files...`);
+                updateStatus(`Extracting multimodal context from ${files.length} files...`, 15);
                 let sampleParts = [{ text: "Analyze the following files to propose organizational categories:\n" }];
                 const sampleSize = parseInt(document.getElementById('sample-size-input').value) || 20;
                 const shuffled = files.sort(() => 0.5 - Math.random()).slice(0, sampleSize);
@@ -650,7 +667,7 @@
                                     : baseModel;
 
                 while (approvedCategories.length === 0) {
-                    updateStatus(`Querying AI Oracle (${genModel}) for optimal clusters...`);
+                    updateStatus(`Querying AI Oracle (${genModel}) for optimal clusters...`, 30);
                     
                     let sysPrompt = `You are a master file organizer. Context: ${hint}. Based on the diverse content provided, propose between 1 and ${maxCat} distinct, broad folder categories.`;
                     if (rejectedCategories.length > 0) {
@@ -689,7 +706,7 @@
                     });
 
                     if (decision.action === 'cancel') {
-                        container.innerHTML = "<span class='text-warning font-bold text-center'>Sort cancelled by user. Awaiting new instructions.</span>";
+                        container.innerHTML = "<span class='text-warning font-bold text-center py-8 block'>Sort cancelled by user. Awaiting new instructions.</span>";
                         isProcessing = false; initBtn.disabled = false; initBtn.classList.remove('opacity-50', 'cursor-not-allowed'); return;
                     } else if (decision.action === 'regenerate') {
                         if(decision.unchecked.length > 0) rejectedCategories.push(...decision.unchecked);
@@ -707,7 +724,9 @@
                 let processed = 0;
                 for (let f of files) {
                     processed++;
-                    updateStatus(`Sorting file ${processed} of ${files.length}: <br><span class="text-brand text-sm">${f.handle.name}</span>`);
+                    let currentProgress = 40 + Math.floor((processed / files.length) * 60); // Math scales remaining progress from 40% to 100%
+                    
+                    updateStatus(`Sorting file ${processed} of ${files.length}: <br><span class="text-brand text-sm">${f.handle.name}</span>`, currentProgress);
                     
                     const sysPromptClassify = `You are a file classifier. Context: ${hint}. Choose the closest conceptual match from this exact list: ${JSON.stringify(approvedCategories)}. Make your absolute best guess based on the file content or name. Do not use 'Uncategorized' unless completely unrelated.`;
                     
@@ -736,7 +755,7 @@
                     let finalConfidence = parseInt(baseResult.confidence) || 0;
 
                     if (useFallback && finalConfidence <= threshold) {
-                        updateStatus(`Escalating file ${processed} to Deep Analysis (${fallbackModel})...<br><span class="text-brand text-sm">${f.handle.name}</span>`);
+                        updateStatus(`Escalating file ${processed} to Deep Analysis (${fallbackModel})...<br><span class="text-brand text-sm">${f.handle.name}</span>`, currentProgress);
                         try {
                             const fallbackResult = await callLLM(fileParts, sysPromptClassify, fallbackModel, false, true);
                             finalCategory = fallbackResult.category;
@@ -762,7 +781,10 @@
                     } catch(e) { console.error(`Move failed for ${f.handle.name}`); }
                 }
 
-                container.innerHTML = `<span class='text-[#4ade80] font-bold text-2xl text-center py-8 block'>Sort Complete! Organized ${files.length} files.</span>`;
+                updateStatus("Organization Complete!", 100);
+                setTimeout(() => {
+                    container.innerHTML = `<span class='text-[#4ade80] font-bold text-2xl text-center py-8 block'>Sort Complete! Organized ${files.length} files.</span>`;
+                }, 1000);
                 showToast("Organization complete!", "success");
 
             } catch (err) {
@@ -778,13 +800,38 @@
         function simulateScan() {
             if (!rootDirectoryHandle) { showToast("Please link a Local Sector first.", "warning"); return; }
             const isLocal = document.getElementById('local-process-check').checked;
+            const container = document.getElementById('dedupe-status-container');
             
-            document.getElementById('dedupe-status').innerHTML = `
-                <div class="flex flex-col items-center gap-4 mt-20">
-                    <svg class="animate-spin h-8 w-8 text-brand" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-                    <span class="text-white font-semibold">${isLocal ? 'Hashing files locally via Web Crypto API...' : 'Establishing secure link to Nexus Oracle...'}</span>
-                </div>
-            `;
+            let progress = 0;
+            const msg = isLocal ? 'Hashing files locally via Web Crypto API...' : 'Establishing secure link to Nexus Oracle...';
+            
+            const updateUi = () => {
+                container.innerHTML = `
+                    <div class="flex flex-col items-center gap-4 py-16 w-full max-w-md mx-auto">
+                        ${progress < 100 ? '<svg class="animate-spin h-10 w-10 text-brand" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>' : ''}
+                        <span class="text-white font-semibold text-center text-lg">${progress < 100 ? msg : 'Vault Mapping Complete.'}</span>
+                        <div class="w-full bg-[#3A3A3A] rounded-full h-3 mt-4 overflow-hidden shadow-inner border border-gray-600">
+                            <div class="bg-brand h-3 rounded-full transition-all duration-300" style="width: ${progress}%"></div>
+                        </div>
+                    </div>
+                `;
+            };
+            
+            updateUi();
+            
+            const interval = setInterval(() => {
+                progress += Math.floor(Math.random() * 15) + 5;
+                if (progress >= 100) {
+                    progress = 100;
+                    clearInterval(interval);
+                    updateUi();
+                    setTimeout(() => {
+                        container.innerHTML = "<span class='text-[#4ade80] font-bold text-xl text-center py-20 block'>Deep Scan Simulation Complete!</span>";
+                    }, 1000);
+                } else {
+                    updateUi();
+                }
+            }, 600);
         }
 
         const instructions = {
