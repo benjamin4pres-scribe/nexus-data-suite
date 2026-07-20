@@ -95,7 +95,6 @@
     <header class="bg-card border-b border-surface px-6 py-4 flex flex-col sm:flex-row justify-between items-center shadow-md gap-4">
         <h1 class="text-2xl font-bold text-brand">Nexus Data Suite <span class="text-sm text-textMuted font-normal ml-2">Web Edition</span></h1>
         
-        <!-- gap-6 perfectly matches the px-6 padding of the header container -->
         <div class="flex items-center gap-6">
             <!-- Buy Me A Coffee Button -->
             <a href="YOUR_PATREON_LINK_HERE" target="_blank" class="bg-surface hover:bg-[#3A3A3A] border border-gray-600 text-white px-4 py-2 rounded-md font-semibold transition flex items-center gap-2 shadow-sm">
@@ -112,8 +111,9 @@
 
     <!-- Tabs Navigation -->
     <div class="flex w-full bg-card border-b border-surface">
-        <button onclick="switchTab('organizer')" id="btn-organizer" class="tab-btn active flex-1 py-3 text-center font-bold text-gray-300 hover:text-white hover:bg-surface">Smart Organizer</button>
-        <button onclick="switchTab('deduplicator')" id="btn-deduplicator" class="tab-btn flex-1 py-3 text-center font-bold text-gray-300 hover:text-white hover:bg-surface">Duplicate Finder</button>
+        <button onclick="switchTab('organizer')" id="btn-organizer" class="tab-btn active flex-1 py-3 text-center font-bold text-gray-300 hover:text-white hover:bg-surface border-r border-surface">Smart Organizer</button>
+        <button onclick="switchTab('deduplicator')" id="btn-deduplicator" class="tab-btn flex-1 py-3 text-center font-bold text-gray-300 hover:text-white hover:bg-surface border-r border-surface">Duplicate Finder</button>
+        <button onclick="switchTab('recovery')" id="btn-recovery" class="tab-btn flex-1 py-3 text-center font-bold text-gray-300 hover:text-white hover:bg-surface">Echo Recovery</button>
     </div>
 
     <main class="flex-grow p-6 md:p-10 max-w-6xl mx-auto w-full">
@@ -126,7 +126,7 @@
                     <label class="text-brand font-semibold md:w-1/4">Target Node (Directory)</label>
                     <div class="flex-grow flex gap-2 w-full">
                         <input type="text" id="dir-display" readonly placeholder="No directory linked..." class="flex-grow bg-surface border border-gray-600 text-textMain rounded-md px-4 py-2 focus:outline-none cursor-not-allowed opacity-70">
-                        <button onclick="requestDirectoryAccess()" class="bg-surface hover:bg-[#3A3A3A] border border-gray-600 px-6 py-2 rounded-md font-bold transition">Link Local Folder</button>
+                        <button onclick="requestDirectoryAccess()" class="bg-surface hover:bg-[#3A3A3A] border border-gray-600 px-6 py-2 rounded-md font-bold transition whitespace-nowrap">Link Local Folder</button>
                     </div>
                 </div>
 
@@ -148,7 +148,7 @@
                 <div class="flex flex-col md:flex-row gap-4 items-center">
                     <div class="flex items-center gap-3 md:w-1/4">
                         <input type="checkbox" id="escalate-check" checked class="custom-checkbox">
-                        <label for="escalate-check" class="text-brand font-semibold cursor-pointer">Escalate to Deep Analysis</label>
+                        <label for="escalate-check" class="text-brand font-semibold cursor-pointer whitespace-nowrap">Escalate to Deep Analysis</label>
                     </div>
                     <div class="flex items-center gap-3">
                         <label class="text-gray-300 text-sm">if confidence drops below:</label>
@@ -170,7 +170,6 @@
             <div class="bg-card p-6 rounded-xl shadow-lg border border-surface min-h-[200px] flex flex-col items-center justify-center relative">
                 
                 <div id="organizer-dynamic-ui" class="w-full hidden">
-                    <!-- Progress Section -->
                     <div class="w-full mb-6">
                         <div class="flex justify-between text-sm text-textMuted mb-2">
                             <span id="organizer-progress-text">Processing...</span>
@@ -181,7 +180,6 @@
                         </div>
                     </div>
                     
-                    <!-- Categories Approval Section -->
                     <div id="category-approval-section" class="hidden w-full bg-surface p-4 rounded-lg border border-gray-600">
                         <h3 class="text-lg font-bold text-white mb-2">Review Proposed Clusters</h3>
                         <p class="text-sm text-textMuted mb-4">Uncheck categories you do not want, then click Recalibrate or Approve.</p>
@@ -190,7 +188,7 @@
                             <!-- Checkboxes injected here -->
                         </div>
                         
-                        <div class="flex gap-3 border-t border-gray-600 pt-4">
+                        <div class="flex flex-col sm:flex-row gap-3 border-t border-gray-600 pt-4">
                             <button onclick="approveCategoriesAndSort()" class="bg-[#4ade80] hover:bg-[#22c55e] text-[#121212] px-4 py-2 rounded-md font-bold transition flex-1">Approve & Sort</button>
                             <button onclick="recalibrateCategories()" class="bg-surface hover:bg-[#3A3A3A] border border-gray-500 text-white px-4 py-2 rounded-md font-bold transition flex-1">Recalibrate Unchecked</button>
                         </div>
@@ -231,7 +229,7 @@
                     <label class="text-brand font-semibold md:w-1/4">Primary Data Sector</label>
                     <div class="flex-grow flex gap-2 w-full">
                         <input type="text" id="dedupe-dir-display" readonly placeholder="No directory linked..." class="flex-grow bg-surface border border-gray-600 text-textMain rounded-md px-4 py-2 cursor-not-allowed opacity-70 focus:outline-none">
-                        <button onclick="requestDirectoryAccess()" class="bg-surface hover:bg-[#3A3A3A] border border-gray-600 px-6 py-2 rounded-md font-bold transition">Link Sector</button>
+                        <button onclick="requestDedupeDirectoryAccess()" class="bg-surface hover:bg-[#3A3A3A] border border-gray-600 px-6 py-2 rounded-md font-bold transition whitespace-nowrap">Link Sector</button>
                     </div>
                 </div>
 
@@ -257,6 +255,58 @@
             </div>
         </section>
 
+        <!-- ECHO RECOVERY TAB -->
+        <section id="tab-recovery" class="hidden space-y-6">
+            
+            <div class="bg-card p-6 rounded-xl shadow-lg border border-surface space-y-5">
+                
+                <div class="bg-blue-900/20 text-blue-200 p-4 rounded-md text-sm border border-blue-800/50 mb-2">
+                    <strong class="text-white text-base">Echo Recovery Protocol</strong><br>
+                    Safely injects files from a Source into a Destination. Files with exact cryptographic matches in the destination are ignored. New/missing files are cloned into a secure <code class="bg-black/30 px-1 py-0.5 rounded">Restored</code> subfolder.
+                </div>
+
+                <div class="flex flex-col md:flex-row gap-4 items-center">
+                    <label class="text-brand font-semibold md:w-1/4">Source Node (Files to restore)</label>
+                    <div class="flex-grow flex gap-2 w-full">
+                        <input type="text" id="recovery-source-display" readonly placeholder="No source linked..." class="flex-grow bg-surface border border-gray-600 text-textMain rounded-md px-4 py-2 cursor-not-allowed opacity-70 focus:outline-none">
+                        <button onclick="requestRecoverySource()" class="bg-surface hover:bg-[#3A3A3A] border border-gray-600 px-6 py-2 rounded-md font-bold transition whitespace-nowrap">Link Source</button>
+                    </div>
+                </div>
+
+                <div class="flex flex-col md:flex-row gap-4 items-center">
+                    <label class="text-brand font-semibold md:w-1/4">Destination Node (Target drive)</label>
+                    <div class="flex-grow flex gap-2 w-full">
+                        <input type="text" id="recovery-dest-display" readonly placeholder="No destination linked..." class="flex-grow bg-surface border border-gray-600 text-textMain rounded-md px-4 py-2 cursor-not-allowed opacity-70 focus:outline-none">
+                        <button onclick="requestRecoveryDest()" class="bg-surface hover:bg-[#3A3A3A] border border-gray-600 px-6 py-2 rounded-md font-bold transition whitespace-nowrap">Link Destination</button>
+                    </div>
+                </div>
+                
+                <div class="flex items-center gap-3 mt-2 border-t border-surface pt-4">
+                    <input type="checkbox" id="recovery-subdirs-check" checked class="custom-checkbox">
+                    <label for="recovery-subdirs-check" class="text-brand font-semibold cursor-pointer">Deep Scan Source (Include Subdirectories)</label>
+                </div>
+            </div>
+
+            <button onclick="runEchoRecovery()" id="btn-init-recovery" class="w-full bg-[#8b5cf6] hover:bg-[#7c3aed] text-white px-8 py-3 rounded-md font-bold text-lg transition shadow-lg">Initiate Recovery Protocol</button>
+            
+            <div class="bg-card p-6 rounded-xl shadow-lg border border-surface min-h-[250px] flex flex-col relative">
+                
+                <div id="recovery-dynamic-ui" class="w-full hidden mb-4">
+                    <div class="flex justify-between text-sm text-textMuted mb-2">
+                        <span id="recovery-progress-text">Initializing Protocol...</span>
+                        <span id="recovery-progress-pct">0%</span>
+                    </div>
+                    <div class="w-full bg-surface rounded-full h-2.5 overflow-hidden border border-gray-600">
+                        <div id="recovery-progress-bar" class="bg-[#8b5cf6] h-2.5 rounded-full transition-all duration-300" style="width: 0%"></div>
+                    </div>
+                </div>
+
+                <div id="recovery-status" class="text-textMuted text-center flex-grow flex flex-col items-center justify-center">
+                    Aegis Shield active. Link Source and Destination to begin.
+                </div>
+            </div>
+        </section>
+
     </main>
 
     <!-- AI Setup Modal -->
@@ -274,7 +324,6 @@
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <!-- Left Column: Provider & Key -->
                 <div class="space-y-5">
                     <div>
                         <label class="block text-sm font-semibold text-gray-300 mb-2">AI Provider</label>
@@ -300,7 +349,6 @@
                     </button>
                 </div>
 
-                <!-- Right Column: Model Selection -->
                 <div class="space-y-5 bg-surface/50 p-4 rounded-lg border border-gray-700">
                     <div>
                         <label class="block text-sm font-semibold text-gray-300 mb-2">Primary Model (Fast & Efficient)</label>
@@ -340,18 +388,24 @@
         </div>
     </div>
 
-
     <script>
         let rootDirectoryHandle = null;
+        let dedupeDirectoryHandle = null;
+        let recoverySourceHandle = null;
+        let recoveryDestHandle = null;
+
         let globalFilesToClassify = [];
         let globalApprovedCategories = [];
-        let deleteConfirmCallback = null;
+        let globalDuplicateSets = [];
 
         function switchTab(tabId) {
             document.getElementById('tab-organizer').classList.add('hidden');
             document.getElementById('tab-deduplicator').classList.add('hidden');
+            document.getElementById('tab-recovery').classList.add('hidden');
+            
             document.getElementById('btn-organizer').classList.remove('active');
             document.getElementById('btn-deduplicator').classList.remove('active');
+            document.getElementById('btn-recovery').classList.remove('active');
 
             document.getElementById(`tab-${tabId}`).classList.remove('hidden');
             document.getElementById(`btn-${tabId}`).classList.add('active');
@@ -382,18 +436,45 @@
 
         async function requestDirectoryAccess() {
             try {
-                if (!('showDirectoryPicker' in window)) {
-                    showToast("Your browser does not support the File System Access API. Please use Chrome or Edge.", "error");
-                    return;
-                }
+                if (!('showDirectoryPicker' in window)) throw new Error("Browser unsupported.");
                 rootDirectoryHandle = await window.showDirectoryPicker({ mode: 'readwrite' });
                 document.getElementById('dir-display').value = `🔗 Linked: ${rootDirectoryHandle.name}`;
-                document.getElementById('dedupe-dir-display').value = `🔗 Linked: ${rootDirectoryHandle.name}`;
                 showToast(`Successfully linked to folder: ${rootDirectoryHandle.name}`, "success");
             } catch (err) {
-                if (err.name !== 'AbortError') {
-                    showToast(`Error accessing directory: ${err.message}`, "error");
-                }
+                if (err.name !== 'AbortError') showToast(`Error accessing directory: ${err.message}`, "error");
+            }
+        }
+
+        async function requestDedupeDirectoryAccess() {
+            try {
+                if (!('showDirectoryPicker' in window)) throw new Error("Browser unsupported.");
+                dedupeDirectoryHandle = await window.showDirectoryPicker({ mode: 'readwrite' });
+                document.getElementById('dedupe-dir-display').value = `🔗 Linked: ${dedupeDirectoryHandle.name}`;
+                showToast(`Successfully linked to folder: ${dedupeDirectoryHandle.name}`, "success");
+            } catch (err) {
+                if (err.name !== 'AbortError') showToast(`Error accessing directory: ${err.message}`, "error");
+            }
+        }
+
+        async function requestRecoverySource() {
+            try {
+                if (!('showDirectoryPicker' in window)) throw new Error("Browser unsupported.");
+                recoverySourceHandle = await window.showDirectoryPicker({ mode: 'read' });
+                document.getElementById('recovery-source-display').value = `🔗 Source: ${recoverySourceHandle.name}`;
+                showToast(`Linked Source: ${recoverySourceHandle.name}`, "success");
+            } catch (err) {
+                if (err.name !== 'AbortError') showToast(`Error accessing directory: ${err.message}`, "error");
+            }
+        }
+
+        async function requestRecoveryDest() {
+            try {
+                if (!('showDirectoryPicker' in window)) throw new Error("Browser unsupported.");
+                recoveryDestHandle = await window.showDirectoryPicker({ mode: 'readwrite' });
+                document.getElementById('recovery-dest-display').value = `🔗 Destination: ${recoveryDestHandle.name}`;
+                showToast(`Linked Destination: ${recoveryDestHandle.name}`, "success");
+            } catch (err) {
+                if (err.name !== 'AbortError') showToast(`Error accessing directory: ${err.message}`, "error");
             }
         }
 
@@ -407,14 +488,8 @@
             const savedPrimary = localStorage.getItem('nexus_primary_model');
             const savedFallback = localStorage.getItem('nexus_fallback_model');
             
-            if(savedPrimary) {
-                const pSelect = document.getElementById('primary-model-select');
-                pSelect.innerHTML = `<option value="${savedPrimary}">${savedPrimary} (Saved)</option>`;
-            }
-            if(savedFallback) {
-                const fSelect = document.getElementById('fallback-model-select');
-                fSelect.innerHTML = `<option value="${savedFallback}">${savedFallback} (Saved)</option>`;
-            }
+            if(savedPrimary) document.getElementById('primary-model-select').innerHTML = `<option value="${savedPrimary}">${savedPrimary} (Saved)</option>`;
+            if(savedFallback) document.getElementById('fallback-model-select').innerHTML = `<option value="${savedFallback}">${savedFallback} (Saved)</option>`;
 
             modal.classList.remove('hidden');
             void modal.offsetWidth;
@@ -438,10 +513,7 @@
         async function refreshModels() {
             const provider = document.getElementById('api-provider').value;
             const apiKey = document.getElementById('api-key').value.trim();
-            if (!apiKey) {
-                showToast("Enter an API key to fetch models.", "warning");
-                return;
-            }
+            if (!apiKey) { showToast("Enter an API key to fetch models.", "warning"); return; }
 
             const primarySelect = document.getElementById('primary-model-select');
             const fallbackSelect = document.getElementById('fallback-model-select');
@@ -458,10 +530,9 @@
                     }
                     const data = await res.json();
                     
-                    // Explicitly filter for multimodal generateContent compatibility
                     models = data.models
                         .filter(m => m.supportedGenerationMethods && m.supportedGenerationMethods.includes("generateContent"))
-                        .filter(m => m.name.includes("gemini")) 
+                        .filter(m => m.name.includes("gemini"))
                         .map(m => m.name.replace('models/', ''));
                         
                 } else if (provider === 'openai') {
@@ -473,9 +544,8 @@
                     models = data.data.map(m => m.id).filter(id => id.includes("gpt"));
                 }
 
-                if (models.length === 0) throw new Error("No compatible multimodal models found.");
+                if (models.length === 0) throw new Error("No compatible models found for this key.");
 
-                // Smart Scoring Algorithm
                 let bestPrimary = models[0];
                 let bestFallback = models[0];
                 let maxPrimaryScore = -1;
@@ -487,19 +557,16 @@
                     let fScore = 0;
                     
                     const versionMatch = name.match(/[\d.]+/);
-                    const versionStr = versionMatch ? versionMatch[0] : "0";
-                    const versionNum = parseFloat(versionStr) || 0;
+                    const versionNum = versionMatch ? parseFloat(versionMatch[0]) : 0;
                     
                     pScore += versionNum * 10;
                     fScore += versionNum * 10;
 
                     if (name.includes('flash') || name.includes('mini') || name.includes('haiku')) {
-                        pScore += 50; 
-                        fScore -= 20; 
+                        pScore += 50; fScore -= 20; 
                     }
                     if (name.includes('pro') || name.includes('opus') || name.includes('gpt-4') || name.includes('gpt-5')) {
-                        fScore += 50; 
-                        pScore -= 20; 
+                        fScore += 50; pScore -= 20; 
                     }
                     if (name.includes('vision')) { pScore += 10; fScore += 10; }
 
@@ -540,37 +607,28 @@
         async function getFileContentForAI(fileHandle) {
             try {
                 const file = await fileHandle.getFile();
-                if (file.size > 15000000) {
-                    return { text: `Filename: ${file.name}\n[File too large for analysis (>15MB)]` };
-                }
+                if (file.size > 15000000) return { text: `Filename: ${file.name}\n[File too large for analysis (>15MB)]` };
                 
                 const type = file.type || '';
                 const ext = file.name.split('.').pop().toLowerCase();
                 const textExtensions = ['txt','md','js','py','html','css','json','csv'];
                 
-                // Read as Text
                 if (type.startsWith('text/') || type === 'application/json' || textExtensions.includes(ext)) {
                     const text = await file.slice(0, 5000).text();
                     return { text: `Filename: ${file.name}\nContent snippet:\n${text.substring(0, 1500)}` };
                 } 
-                // Read as Base64 (Multimodal)
                 else if (type.startsWith('image/') || type === 'application/pdf') {
                     return new Promise((resolve) => {
                         const reader = new FileReader();
                         reader.onloadend = () => {
                             const base64 = reader.result.split(',')[1];
-                            resolve({
-                                inlineData: { data: base64, mimeType: type || (ext==='pdf'?'application/pdf':'image/jpeg') }
-                            });
+                            resolve({ inlineData: { data: base64, mimeType: type || (ext==='pdf'?'application/pdf':'image/jpeg') } });
                         };
                         reader.readAsDataURL(file);
                     });
                 }
-                // Fallback for binaries
                 return { text: `Filename: ${file.name}\n[Binary or unrecognized format. Classify conceptually based on filename.]` };
-            } catch(e) {
-                return { text: `Filename: ${fileHandle.name}\n[Error reading file contents]` };
-            }
+            } catch(e) { return { text: `Filename: ${fileHandle.name}\n[Error reading file contents]` }; }
         }
 
         async function callLLM(model, systemInstruction, parts, jsonSchema = null) {
@@ -590,28 +648,14 @@
 
             const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
             
-            // Retry logic
             for (let attempt = 1; attempt <= 3; attempt++) {
                 try {
-                    const response = await fetch(url, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(payload)
-                    });
-                    
-                    if (response.status === 429) {
-                        await new Promise(r => setTimeout(r, 1000 * attempt));
-                        continue;
-                    }
-                    
-                    if (!response.ok) {
-                        const errData = await response.json().catch(()=>({}));
-                        throw new Error(errData.error?.message || `HTTP ${response.status}`);
-                    }
+                    const response = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+                    if (response.status === 429) { await new Promise(r => setTimeout(r, 1000 * attempt)); continue; }
+                    if (!response.ok) { const errData = await response.json().catch(()=>({})); throw new Error(errData.error?.message || `HTTP ${response.status}`); }
                     
                     const data = await response.json();
                     if (!data.candidates || !data.candidates[0].content) throw new Error("Invalid API response format");
-                    
                     return data.candidates[0].content.parts[0].text;
                 } catch (e) {
                     if (attempt === 3) throw e;
@@ -622,11 +666,9 @@
         function setOrganizerProgress(pct, text) {
             document.getElementById('organizer-dynamic-ui').classList.remove('hidden');
             document.getElementById('organizer-status-fallback').classList.add('hidden');
-            
             const bar = document.getElementById('organizer-progress-bar');
             const pctText = document.getElementById('organizer-progress-pct');
             const statusText = document.getElementById('organizer-progress-text');
-            
             if (bar) bar.style.width = `${Math.min(100, Math.max(0, pct))}%`;
             if (pctText) pctText.innerText = `${Math.round(pct)}%`;
             if (statusText && text) statusText.innerText = text;
@@ -682,8 +724,6 @@
                 
                 const responseText = await callLLM(primaryModel, sysPrompt, parts, schema);
                 let categories = JSON.parse(responseText);
-                
-                // Sanitize categories
                 categories = categories.map(c => c.replace(/[<>:"/\\|?*]/g, '').trim()).filter(c => c.length > 0);
                 
                 renderCategoryApproval(categories);
@@ -721,10 +761,7 @@
             const checkboxes = document.querySelectorAll('#category-checkbox-list input[type="checkbox"]');
             const rejected = Array.from(checkboxes).filter(cb => !cb.checked).map(cb => cb.value);
             
-            if (rejected.length === 0) {
-                showToast("Uncheck at least one category to recalibrate.", "warning");
-                return;
-            }
+            if (rejected.length === 0) { showToast("Uncheck at least one category to recalibrate.", "warning"); return; }
             
             const hintInput = document.getElementById('oracle-hint-input');
             const originalHint = hintInput.value;
@@ -738,10 +775,7 @@
             const checkboxes = document.querySelectorAll('#category-checkbox-list input[type="checkbox"]');
             globalApprovedCategories = Array.from(checkboxes).filter(cb => cb.checked).map(cb => cb.value);
             
-            if (globalApprovedCategories.length === 0) {
-                showToast("You must approve at least one category.", "error");
-                return;
-            }
+            if (globalApprovedCategories.length === 0) { showToast("You must approve at least one category.", "error"); return; }
             
             document.getElementById('category-approval-section').classList.add('hidden');
             
@@ -750,7 +784,6 @@
             const useFallback = document.getElementById('escalate-check').checked;
             const threshold = parseInt(document.getElementById('confidence-threshold').value) || 90;
             
-            // Relaxed prompt handling for gibberish and binary files
             const sysPrompt = `You are a file classifier. Select the closest conceptual match from this exact array: ${JSON.stringify(globalApprovedCategories)}. If text contains binary garbage, ignore it and guess based on filename. Only use "Uncategorized" if absolutely impossible to guess.`;
             const schema = { 
                 type: "OBJECT", 
@@ -773,26 +806,20 @@
                     try {
                         const res = await callLLM(primaryModel, sysPrompt, [content], schema);
                         const parsed = JSON.parse(res);
-                        
-                        if (useFallback && parsed.confidence < threshold) {
-                            throw new Error("Confidence too low");
-                        }
+                        if (useFallback && parsed.confidence < threshold) throw new Error("Confidence too low");
                         targetCategory = parsed.category;
                     } catch (e) {
                         if (useFallback) {
                             try {
                                 const resFall = await callLLM(fallbackModel, sysPrompt, [content], schema);
                                 targetCategory = JSON.parse(resFall).category;
-                            } catch (fallbackErr) {
-                                console.warn("Fallback model also failed:", fallbackErr);
-                            }
+                            } catch (fallbackErr) { console.warn("Fallback model also failed:", fallbackErr); }
                         }
                     }
                     
                     if (!globalApprovedCategories.includes(targetCategory)) targetCategory = "Uncategorized";
                     if (targetCategory === "Uncategorized") uncatCount++; else successCount++;
 
-                    // File routing system
                     const targetDirHandle = await rootDirectoryHandle.getDirectoryHandle(targetCategory, { create: true });
                     if (f.handle.move) {
                         await f.handle.move(targetDirHandle, f.handle.name);
@@ -804,18 +831,14 @@
                         await writable.close();
                         await f.parent.removeEntry(f.handle.name);
                     }
-
                 } catch(e) {
                     console.error(`Move failed for ${f.handle.name}`, e);
                     uncatCount++;
                 }
             }
-
             setOrganizerProgress(100, `Sort Complete! ${successCount} routed, ${uncatCount} quarantined.`);
             showToast("Protocol Complete", "success");
         }
-
-        let globalDuplicateSets = [];
 
         function formatBytes(bytes) {
             if (bytes === 0) return '0 B';
@@ -828,18 +851,16 @@
         function setDedupeProgress(pct, text) {
             document.getElementById('dedupe-dynamic-ui').classList.remove('hidden');
             document.getElementById('dedupe-status').classList.remove('mt-20');
-            
             const bar = document.getElementById('dedupe-progress-bar');
             const pctText = document.getElementById('dedupe-progress-pct');
             const statusText = document.getElementById('dedupe-progress-text');
-            
             if (bar) bar.style.width = `${Math.min(100, Math.max(0, pct))}%`;
             if (pctText) pctText.innerText = `${Math.round(pct)}%`;
             if (statusText && text) statusText.innerText = text;
         }
 
         async function runActualDeduplication() {
-            if (!rootDirectoryHandle) { showToast("Please link a Sector first.", "warning"); return; }
+            if (!dedupeDirectoryHandle) { showToast("Please link a Sector first.", "warning"); return; }
 
             const btn = document.getElementById('btn-init-dedupe');
             const isLocal = document.getElementById('local-process-check').checked;
@@ -848,7 +869,6 @@
             document.getElementById('dedupe-status').innerHTML = ''; 
             
             try {
-                // STAGE 1: Mapping & Size Grouping
                 setDedupeProgress(5, "Stage 1: Mapping the Sectors...");
                 const fileList = [];
                 async function getFiles(dirHandle, path = '') {
@@ -861,7 +881,7 @@
                         }
                     }
                 }
-                await getFiles(rootDirectoryHandle);
+                await getFiles(dedupeDirectoryHandle);
                 
                 const sizeGroups = new Map();
                 fileList.forEach(f => {
@@ -880,7 +900,6 @@
                     return;
                 }
 
-                // STAGE 2: Signal Filtering (Partial Hash)
                 const partialGroups = new Map();
                 for (let i = 0; i < potentialDupes.length; i++) {
                     const f = potentialDupes[i];
@@ -888,7 +907,6 @@
                     const processMsg = isLocal ? "Local Web Crypto" : "Oracle Node Signal Filter";
                     setDedupeProgress(pct, `Stage 2: ${processMsg} (${i+1}/${potentialDupes.length})...`);
                     
-                    // Simulate external routing delay if unchecked, but run securely local
                     if(!isLocal) await new Promise(r => setTimeout(r, 5));
                     
                     const slice = f.file.slice(0, 16384); 
@@ -913,7 +931,6 @@
                     return;
                 }
 
-                // STAGE 3: Deep Core Synthesis
                 const finalGroups = new Map();
                 for (let i = 0; i < finalCandidates.length; i++) {
                     const f = finalCandidates[i];
@@ -963,7 +980,6 @@
 
         function renderDuplicateResults() {
             const statusEl = document.getElementById('dedupe-status');
-            
             let totalWastedSpace = 0;
             globalDuplicateSets.forEach(group => { totalWastedSpace += group[0].size * (group.length - 1); });
 
@@ -1016,11 +1032,7 @@
             const checkboxes = document.querySelectorAll('input[id^="dupe-"]');
             let count = 0;
             checkboxes.forEach(cb => { if (cb.checked) count++; });
-
-            if (count === 0) {
-                showToast("No files selected for deletion.", "warning");
-                return;
-            }
+            if (count === 0) { showToast("No files selected for deletion.", "warning"); return; }
 
             document.getElementById('delete-modal-text').innerText = `You are about to permanently obliterate ${count} files from your hard drive. This cannot be undone. Proceed?`;
             
@@ -1036,22 +1048,17 @@
         function closeDeleteModal(executeDelete) {
             const modal = document.getElementById('delete-modal');
             const content = document.getElementById('delete-modal-content');
-            
             modal.classList.add('opacity-0');
             content.classList.add('scale-95');
-            
             setTimeout(async () => {
                 modal.classList.add('hidden');
-                if (executeDelete) {
-                    await executeDeletion();
-                }
+                if (executeDelete) await executeDeletion();
             }, 200);
         }
 
         async function executeDeletion() {
             const checkboxes = document.querySelectorAll('input[id^="dupe-"]');
             const toDelete = [];
-
             checkboxes.forEach(cb => {
                 if (cb.checked) {
                     const parts = cb.id.split('-');
@@ -1067,13 +1074,177 @@
                     successCount++;
                     const row = document.getElementById(`dupe-row-${item.group}-${item.file}`);
                     if(row) row.style.opacity = '0.3';
-                } catch (e) {
-                    console.error("Failed to delete", f.path, e);
-                }
+                } catch (e) { console.error("Failed to delete", f.path, e); }
             }
             showToast(`Successfully obliterated ${successCount} duplicate files.`, "success");
         }
 
+        async function generateFullHash(fileHandle) {
+            const file = await fileHandle.getFile();
+            const buffer = await file.arrayBuffer();
+            const hashBuffer = await crypto.subtle.digest('SHA-256', buffer);
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+        }
+
+        async function getSafeRecoveryName(dirHandle, originalName) {
+            let safeName = originalName;
+            let counter = 1;
+            const parts = originalName.split('.');
+            const ext = parts.length > 1 ? '.' + parts.pop() : '';
+            const base = parts.join('.');
+
+            while (true) {
+                try {
+                    await dirHandle.getFileHandle(safeName, { create: false });
+                    // If no error is thrown, the file exists. Increment counter.
+                    safeName = `${base} (Restored ${counter})${ext}`;
+                    counter++;
+                } catch (e) {
+                    // File does not exist, safe to use
+                    break;
+                }
+            }
+            return safeName;
+        }
+
+        function setRecoveryProgress(pct, text) {
+            document.getElementById('recovery-dynamic-ui').classList.remove('hidden');
+            document.getElementById('recovery-status').classList.remove('mt-20');
+            const bar = document.getElementById('recovery-progress-bar');
+            const pctText = document.getElementById('recovery-progress-pct');
+            const statusText = document.getElementById('recovery-progress-text');
+            if (bar) bar.style.width = `${Math.min(100, Math.max(0, pct))}%`;
+            if (pctText) pctText.innerText = `${Math.round(pct)}%`;
+            if (statusText && text) statusText.innerText = text;
+        }
+
+        async function runEchoRecovery() {
+            if (!recoverySourceHandle || !recoveryDestHandle) { 
+                showToast("Link both Source and Destination nodes.", "warning"); 
+                return; 
+            }
+            
+            const btn = document.getElementById('btn-init-recovery');
+            btn.disabled = true;
+            btn.classList.add('opacity-50');
+            document.getElementById('recovery-status').innerHTML = ''; 
+
+            try {
+                // PHASE 1: Scan Source
+                setRecoveryProgress(5, "Scanning Source Node...");
+                const sourceFiles = [];
+                const deepScanSource = document.getElementById('recovery-subdirs-check').checked;
+                
+                async function scanSource(dirHandle, path = '') {
+                    for await (const entry of dirHandle.values()) {
+                        if (entry.kind === 'file' && !entry.name.startsWith('.')) {
+                            const file = await entry.getFile();
+                            sourceFiles.push({ handle: entry, size: file.size, path: path + entry.name });
+                        } else if (entry.kind === 'directory' && deepScanSource) {
+                            await scanSource(entry, path + entry.name + '/');
+                        }
+                    }
+                }
+                await scanSource(recoverySourceHandle);
+
+                if (sourceFiles.length === 0) {
+                    setRecoveryProgress(100, "Source is empty.");
+                    document.getElementById('recovery-status').innerHTML = `<span class='text-warning font-bold'>No files found in Source Node.</span>`;
+                    return;
+                }
+
+                // PHASE 2: Scan Destination
+                setRecoveryProgress(15, "Scanning Destination Node...");
+                const destFiles = [];
+                async function scanDest(dirHandle, path = '') {
+                    for await (const entry of dirHandle.values()) {
+                        if (entry.kind === 'file' && !entry.name.startsWith('.') && entry.name !== 'Restored') {
+                            const file = await entry.getFile();
+                            destFiles.push({ handle: entry, size: file.size });
+                        } else if (entry.kind === 'directory' && entry.name !== 'Restored') {
+                            // Always deep scan destination to find all existing echoes
+                            await scanDest(entry, path + entry.name + '/');
+                        }
+                    }
+                }
+                await scanDest(recoveryDestHandle);
+
+                // PHASE 3 & 4: Size Filtering & Hashing Destination Echoes
+                setRecoveryProgress(30, "Aligning file sizes...");
+                const sourceSizes = new Set(sourceFiles.map(f => f.size));
+                const relevantDestFiles = destFiles.filter(f => sourceSizes.has(f.size));
+                
+                const destHashes = new Set();
+                for (let i = 0; i < relevantDestFiles.length; i++) {
+                    const pct = 30 + ((i / relevantDestFiles.length) * 30);
+                    setRecoveryProgress(pct, `Indexing Destination Echoes (${i+1}/${relevantDestFiles.length})...`);
+                    const hash = await generateFullHash(relevantDestFiles[i].handle);
+                    destHashes.add(hash);
+                }
+
+                // PHASE 5: Process Source and Inject
+                setRecoveryProgress(60, "Verifying and Injecting files...");
+                const restoredDirHandle = await recoveryDestHandle.getDirectoryHandle("Restored", { create: true });
+                let restoredCount = 0;
+                let skippedCount = 0;
+                let totalSizeRestored = 0;
+
+                for (let i = 0; i < sourceFiles.length; i++) {
+                    const srcFile = sourceFiles[i];
+                    const pct = 60 + ((i / sourceFiles.length) * 40);
+                    setRecoveryProgress(pct, `Verifying Source File: ${srcFile.handle.name}...`);
+                    
+                    const hash = await generateFullHash(srcFile.handle);
+                    
+                    if (destHashes.has(hash)) {
+                        skippedCount++;
+                    } else {
+                        // Safe Injection
+                        const safeName = await getSafeRecoveryName(restoredDirHandle, srcFile.handle.name);
+                        const newFileHandle = await restoredDirHandle.getFileHandle(safeName, { create: true });
+                        const writable = await newFileHandle.createWritable();
+                        const fileData = await srcFile.handle.getFile();
+                        await writable.write(fileData);
+                        await writable.close();
+                        
+                        restoredCount++;
+                        totalSizeRestored += fileData.size;
+                        destHashes.add(hash); // Add to avoid restoring duplicates existing within the source
+                    }
+                }
+
+                setRecoveryProgress(100, "Recovery Protocol Complete.");
+                
+                document.getElementById('recovery-status').innerHTML = `
+                    <div class="text-left w-full max-w-lg mx-auto bg-surface p-6 rounded-lg border border-gray-700 shadow-sm animate-fade-in mt-4">
+                        <h3 class="text-2xl font-bold text-white border-b border-gray-600 pb-3 mb-4">Aegis Shield Report</h3>
+                        <div class="space-y-3">
+                            <div class="flex justify-between items-center bg-[#1a1a1a] p-3 rounded">
+                                <span class="text-gray-400 font-semibold">Total Source Files:</span>
+                                <span class="text-white font-mono text-lg">${sourceFiles.length}</span>
+                            </div>
+                            <div class="flex justify-between items-center bg-brand/10 border border-brand/20 p-3 rounded">
+                                <span class="text-brand font-bold">Successfully Restored:</span>
+                                <span class="text-white font-mono text-lg">${restoredCount} <span class="text-sm font-normal text-gray-400">(${formatBytes(totalSizeRestored)})</span></span>
+                            </div>
+                            <div class="flex justify-between items-center bg-green-500/10 border border-green-500/20 p-3 rounded">
+                                <span class="text-[#4ade80] font-bold">Safely Ignored (Duplicates):</span>
+                                <span class="text-white font-mono text-lg">${skippedCount}</span>
+                            </div>
+                        </div>
+                        <p class="text-xs text-center text-gray-500 mt-4">Restored files are located in the "Restored" subfolder of your destination.</p>
+                    </div>
+                `;
+
+            } catch (err) {
+                console.error(err);
+                document.getElementById('recovery-status').innerHTML = `<span class='text-danger font-bold'>Error during recovery: ${err.message}</span>`;
+            } finally {
+                btn.disabled = false;
+                btn.classList.remove('opacity-50');
+            }
+        }
     </script>
 </body>
 </html>
