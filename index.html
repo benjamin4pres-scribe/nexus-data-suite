@@ -212,7 +212,7 @@
                     <input type="checkbox" id="local-process-check" checked onchange="toggleOracleSettings()" class="custom-checkbox w-6 h-6 transition-all cursor-pointer">
                 </div>
 
-                <div id="oracle-settings" class="hidden space-y-4 border-l-4 border-brand pl-4 mt-2 transition-all duration-300">
+                <div id="oracle-settings" class="hidden space-y-4 border-l-4 border-[#0d9488] pl-4 mt-2 transition-all duration-300">
                     <div class="bg-blue-900/20 text-blue-200 p-4 rounded-md text-sm border border-blue-800/50">
                         <strong>Oracle Cloud Node 🚀</strong><br>
                         Connect to an external TrueNAS Oracle Node to offload heavy sector processing. (Note: Fallback to Web Crypto will occur if WS connection fails).
@@ -235,7 +235,7 @@
 
             </div>
 
-            <button onclick="runActualDeduplication()" id="btn-init-dedupe" class="w-full bg-brand hover:bg-brandHover text-white px-8 py-3 rounded-md font-bold text-lg transition shadow-lg">Initiate Deep Scan</button>
+            <button onclick="runActualDeduplication()" id="btn-init-dedupe" class="w-full bg-[#0d9488] hover:bg-[#0f766e] text-white px-8 py-3 rounded-md font-bold text-lg transition shadow-lg">Initiate Deep Scan</button>
             
             <div class="bg-card p-6 rounded-xl shadow-lg border border-surface min-h-[300px] flex flex-col relative">
                 
@@ -245,7 +245,7 @@
                         <span id="dedupe-progress-pct">0%</span>
                     </div>
                     <div class="w-full bg-surface rounded-full h-2.5 overflow-hidden border border-gray-600">
-                        <div id="dedupe-progress-bar" class="bg-brand h-2.5 rounded-full transition-all duration-300" style="width: 0%"></div>
+                        <div id="dedupe-progress-bar" class="bg-[#0d9488] h-2.5 rounded-full transition-all duration-300" style="width: 0%"></div>
                     </div>
                 </div>
 
