@@ -33,7 +33,6 @@
             }
         }
     </script>
-    
     <style>
         body { background-color: #121212; color: #E8EAED; }
         
@@ -124,6 +123,14 @@
                             </div>
                         </div>
 
+                        <div>
+                            <label class="text-brand font-semibold block mb-2">Primary AI Model (Fast Pass)</label>
+                            <select id="base-model-select" class="w-full bg-surface border border-gray-600 text-textMain rounded-md px-4 py-2 focus:outline-none focus:border-brand appearance-none cursor-pointer">
+                                <option value="">Select a model...</option>
+                                <!-- Populated via JS -->
+                            </select>
+                        </div>
+
                         <div class="grid grid-cols-2 gap-4">
                             <div>
                                 <label class="text-brand font-semibold block mb-2">Diagnostic Sample Size</label>
@@ -155,9 +162,10 @@
                         
                         <div id="fallback-settings" class="space-y-5 pt-2 transition-opacity duration-300">
                             <div>
-                                <label class="text-white font-semibold block mb-2 text-sm">Advanced Fallback Model (2026 Fleet)</label>
+                                <label class="text-white font-semibold block mb-2 text-sm">Advanced Fallback Model (Flagship Tier)</label>
                                 <select id="fallback-model-select" class="w-full bg-[#1e1e1e] border border-gray-600 text-white rounded-md px-4 py-3 focus:outline-none focus:border-brand appearance-none cursor-pointer">
-                                    <!-- Populated via JS based on selected provider -->
+                                    <option value="">Select a model...</option>
+                                    <!-- Populated via JS -->
                                 </select>
                             </div>
                             <div>
@@ -233,11 +241,6 @@
                 </button>
             </div>
 
-            <div class="bg-blue-900/20 text-blue-200 p-3 rounded-md text-sm border border-blue-800/50 flex gap-3 items-center mb-6">
-                <svg class="w-6 h-6 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
-                <p><strong>Privacy Guarantee:</strong> Your key is stored securely in your browser's local memory. It is never sent to our servers.</p>
-            </div>
-
             <div class="space-y-6">
                 <div>
                     <label class="block text-sm font-semibold text-gray-300 mb-2">Select AI Provider</label>
@@ -266,46 +269,28 @@
                         </button>
                     </div>
                 </div>
+
+                <div class="flex items-center gap-4 bg-surface p-3 rounded-md border border-gray-700">
+                    <button onclick="refreshModels()" class="bg-card hover:bg-[#3A3A3A] border border-gray-500 text-white px-4 py-2 rounded-md text-sm font-bold transition flex items-center gap-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                        Fetch Available Models
+                    </button>
+                    <p id="model-refresh-status" class="text-sm text-textMuted flex-grow">Click to sync API access.</p>
+                </div>
             </div>
 
             <div class="flex justify-between items-center mt-8 pt-6 border-t border-surface">
-                <button onclick="closeApiModal()" class="text-textMuted hover:text-white transition px-4 py-2">Continue without AI</button>
-                <button onclick="saveApiSettings()" class="bg-brand hover:bg-brandHover text-white px-6 py-2 rounded-md font-bold transition shadow-md">Save & Enter Nexus</button>
+                <button onclick="closeApiModal()" class="text-textMuted hover:text-white transition px-4 py-2">Cancel</button>
+                <button onclick="saveApiSettings()" class="bg-brand hover:bg-brandHover text-white px-6 py-2 rounded-md font-bold transition shadow-md">Save Configuration</button>
             </div>
         </div>
     </div>
 
     <script>
-        // --- STREAMING_CHUNK:Defining 2026 Model Architecture... ---
-        // --- GLOBAL STATE & 2026 MODELS ---
+        // --- STREAMING_CHUNK:Initializing Application State... ---
         let rootDirectoryHandle = null;
         let isProcessing = false;
         const ORACLE_WS_URL = "wss://oracle.dadianhosted.com:8443"; 
-
-        // Current AI Landscape (Mid-2026)
-        const AI_MODELS = {
-            gemini: {
-                base: "gemini-3-flash",
-                escalation: [
-                    { id: "gemini-3.1-pro", name: "Gemini 3.1 Pro (Flagship 2026)" },
-                    { id: "gemini-3-deep-think", name: "Gemini 3 Deep Think (Max Reasoning)" }
-                ]
-            },
-            openai: {
-                base: "gpt-5.4-mini",
-                escalation: [
-                    { id: "gpt-5.5", name: "GPT-5.5 (Frontier 2026)" },
-                    { id: "gpt-5.6-sol", name: "GPT-5.6 Sol (Preview)" }
-                ]
-            },
-            claude: {
-                base: "claude-sonnet-5",
-                escalation: [
-                    { id: "claude-fable-5", name: "Claude Fable 5 (Mythos-Class)" },
-                    { id: "claude-opus-4.8", name: "Claude Opus 4.8" }
-                ]
-            }
-        };
 
         // --- UI UTILITIES ---
         function switchTab(tabId) {
@@ -338,18 +323,147 @@
             settingsDiv.style.pointerEvents = isChecked ? "auto" : "none";
         }
 
-        function populateModelDropdown() {
-            const provider = localStorage.getItem('nexus_api_provider') || 'gemini';
-            const select = document.getElementById('fallback-model-select');
-            select.innerHTML = '';
+        // --- STREAMING_CHUNK:Building Dynamic API Loader... ---
+        // --- API MODEL FETCHING & POPULATION ---
+        async function refreshModels() {
+            const provider = document.getElementById('api-provider').value;
+            const key = document.getElementById('api-key').value.trim();
+            const proxy = document.getElementById('proxy-url').value.trim();
+            const statusEl = document.getElementById('model-refresh-status');
+
+            if (!key) {
+                statusEl.innerHTML = `<span class="text-danger">Please enter an API Key first.</span>`;
+                return;
+            }
+
+            statusEl.innerHTML = `<span class="text-brand">Fetching available models...</span>`;
+            let availableModels = [];
+
+            try {
+                if (provider === 'gemini') {
+                    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${key}`);
+                    if (!res.ok) throw new Error(`Gemini API Error: ${res.status} ${res.statusText}`);
+                    const data = await res.json();
+                    
+                    availableModels = data.models
+                        .filter(m => m.supportedGenerationMethods && m.supportedGenerationMethods.includes('generateContent'))
+                        .map(m => ({ id: m.name.replace('models/', ''), name: m.displayName || m.name.replace('models/', '') }));
+                } 
+                else if (provider === 'openai') {
+                    const res = await fetch('https://api.openai.com/v1/models', {
+                        headers: { 'Authorization': `Bearer ${key}` }
+                    });
+                    if (!res.ok) throw new Error(`OpenAI Error: ${res.status} ${res.statusText}`);
+                    const data = await res.json();
+                    
+                    availableModels = data.data
+                        .filter(m => m.id.includes('gpt'))
+                        .map(m => ({ id: m.id, name: m.id }));
+                } 
+                else if (provider === 'claude') {
+                    // Anthropic does not have a standard dynamic /models endpoint for end-users, 
+                    // so we supply the standard updated list.
+                    availableModels = [
+                        { id: "claude-3-5-sonnet-20240620", name: "Claude 3.5 Sonnet (Latest)" },
+                        { id: "claude-3-opus-20240229", name: "Claude 3 Opus" },
+                        { id: "claude-3-haiku-20240307", name: "Claude 3 Haiku" }
+                    ];
+                }
+
+                if (availableModels.length > 0) {
+                    localStorage.setItem(`nexus_models_${provider}`, JSON.stringify(availableModels));
+                    populateModelDropdown(provider);
+                    statusEl.innerHTML = `<span class="text-[#4ade80] font-bold">Success! Loaded ${availableModels.length} models.</span>`;
+                } else {
+                    statusEl.innerHTML = `<span class="text-warning">Key valid, but no generation models found.</span>`;
+                }
+
+            } catch (err) {
+                console.error(err);
+                statusEl.innerHTML = `<span class="text-danger font-bold">Fetch Failed: ${err.message}</span>`;
+            }
+        }
+
+        function populateModelDropdown(forceProvider = null) {
+            const provider = forceProvider || localStorage.getItem('nexus_api_provider') || 'gemini';
+            const baseSelect = document.getElementById('base-model-select');
+            const fallbackSelect = document.getElementById('fallback-model-select');
             
-            const models = AI_MODELS[provider].escalation;
-            models.forEach(model => {
-                const opt = document.createElement('option');
-                opt.value = model.id;
-                opt.textContent = model.name;
-                select.appendChild(opt);
-            });
+            baseSelect.innerHTML = '';
+            fallbackSelect.innerHTML = '';
+
+            const storedModels = localStorage.getItem(`nexus_models_${provider}`);
+            if (storedModels) {
+                const models = JSON.parse(storedModels);
+                models.forEach(model => {
+                    const opt1 = document.createElement('option');
+                    opt1.value = model.id; opt1.textContent = model.name;
+                    
+                    const opt2 = document.createElement('option');
+                    opt2.value = model.id; opt2.textContent = model.name;
+
+                    baseSelect.appendChild(opt1);
+                    fallbackSelect.appendChild(opt2);
+                });
+
+                // Smart Selection Logic: Evaluate models based on keywords and version numbers
+                let bestFastIdx = 0;
+                let bestHeavyIdx = 0;
+                let highestFastScore = -999;
+                let highestHeavyScore = -999;
+
+                models.forEach((m, idx) => {
+                    const name = m.id.toLowerCase();
+                    let fastScore = 0;
+                    let heavyScore = 0;
+
+                    // Score for Fast/Primary Model (Prefer flash, mini, haiku)
+                    if (name.includes('flash')) fastScore += 20;
+                    if (name.includes('mini')) fastScore += 20;
+                    if (name.includes('haiku')) fastScore += 20;
+                    if (name.includes('preview') || name.includes('latest')) fastScore += 5; 
+                    if (name.includes('pro')) fastScore -= 10;
+                    if (name.includes('opus')) fastScore -= 10;
+                    
+                    // Score for Heavy/Fallback Model (Prefer pro, opus, gpt-4/5)
+                    if (name.includes('pro')) heavyScore += 20;
+                    if (name.includes('opus')) heavyScore += 20;
+                    if (name.includes('gpt-4') || name.includes('gpt-5')) heavyScore += 20;
+                    if (name.includes('sonnet')) heavyScore += 10;
+                    if (name.includes('preview') || name.includes('latest')) heavyScore += 5;
+                    if (name.includes('flash')) heavyScore -= 10;
+                    if (name.includes('mini')) heavyScore -= 10;
+                    if (name.includes('haiku')) heavyScore -= 10;
+
+                    // Boost score for higher version numbers (e.g. gemini-1.5 vs gemini-2.0)
+                    const versionMatch = name.match(/\d+(\.\d+)?/);
+                    if (versionMatch) {
+                        const ver = parseFloat(versionMatch[0]);
+                        if (!isNaN(ver)) {
+                            fastScore += ver;
+                            heavyScore += ver;
+                        }
+                    }
+
+                    if (fastScore > highestFastScore) {
+                        highestFastScore = fastScore;
+                        bestFastIdx = idx;
+                    }
+                    if (heavyScore > highestHeavyScore) {
+                        highestHeavyScore = heavyScore;
+                        bestHeavyIdx = idx;
+                    }
+                });
+
+                if (models.length > 0) {
+                    baseSelect.selectedIndex = bestFastIdx;
+                    fallbackSelect.selectedIndex = bestHeavyIdx;
+                }
+
+            } else {
+                baseSelect.innerHTML = '<option value="">(Please configure AI Settings and fetch models)</option>';
+                fallbackSelect.innerHTML = '<option value="">(Please configure AI Settings and fetch models)</option>';
+            }
         }
 
         // --- FILE SYSTEM ACCESS API ---
@@ -368,7 +482,7 @@
             }
         }
 
-        // --- STREAMING_CHUNK:Building Universal LLM Translator... ---
+        // --- STREAMING_CHUNK:Updating Universal LLM Translator... ---
         // --- UNIVERSAL LLM TRANSLATOR ---
         async function callLLM(prompt, systemInstruction, modelName, requireJsonArray = false, requireJsonObject = false) {
             const provider = localStorage.getItem('nexus_api_provider') || 'gemini';
@@ -376,6 +490,7 @@
             const proxyUrl = localStorage.getItem('nexus_proxy_url');
 
             if (!apiKey) throw new Error("API Key missing. Please configure AI Settings.");
+            if (!modelName) throw new Error("No model selected. Please configure AI Settings and fetch models.");
 
             if (provider === 'gemini') {
                 const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`;
@@ -385,7 +500,6 @@
                     generationConfig: {}
                 };
                 
-                // Enforce exact JSON schemas for Gemini 2026 models
                 if (requireJsonArray) {
                     body.generationConfig = { responseMimeType: "application/json", responseSchema: { type: "ARRAY", items: { type: "STRING" } } };
                 } else if (requireJsonObject) {
@@ -396,7 +510,10 @@
                 }
 
                 const res = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
-                if (!res.ok) throw new Error(`Gemini API Error: ${res.statusText}`);
+                if (!res.ok) {
+                    const errText = await res.text();
+                    throw new Error(`Gemini API Error (${res.status}): ${errText}`);
+                }
                 const data = await res.json();
                 return JSON.parse(data.candidates[0].content.parts[0].text);
 
@@ -422,7 +539,6 @@
                 const data = await res.json();
                 
                 let text = data.choices[0].message.content;
-                // If OpenAI wraps array in an object (due to json_object enforcement)
                 if (requireJsonArray && !text.trim().startsWith('[')) {
                     const obj = JSON.parse(text);
                     text = JSON.stringify(Object.values(obj)[0]);
@@ -453,7 +569,7 @@
                 if (!res.ok) throw new Error(`Claude API Error: ${res.statusText}`);
                 const data = await res.json();
                 let text = data.content[0].text.trim();
-                text = text.replace(/```json\n?/g, '').replace(/```\n?/g, ''); // Strip markdown
+                text = text.replace(/```json\n?/g, '').replace(/```\n?/g, ''); 
                 return JSON.parse(text);
             }
         }
@@ -468,8 +584,12 @@
             if (isProcessing) return;
             isProcessing = true;
 
-            const provider = localStorage.getItem('nexus_api_provider') || 'gemini';
-            const baseModel = AI_MODELS[provider].base;
+            const baseModel = document.getElementById('base-model-select').value;
+            if (!baseModel) {
+                showToast("Please open AI Settings and fetch models first.", "error");
+                isProcessing = false;
+                return;
+            }
 
             const container = document.getElementById('organizer-container');
             const initBtn = document.getElementById('btn-initiate');
@@ -528,7 +648,7 @@
                 const maxCat = parseInt(document.getElementById('max-categories-input').value) || 5;
                 const hint = document.getElementById('oracle-hint-input').value || "General files";
                 
-                // Let's use the heavier fallback model to generate categories for better accuracy
+                // Use the heavier fallback model to generate categories if fallback is enabled
                 const genModel = document.getElementById('fallback-check').checked 
                                     ? document.getElementById('fallback-model-select').value 
                                     : baseModel;
@@ -749,6 +869,8 @@
             document.getElementById('api-key').value = localStorage.getItem('nexus_api_key') || '';
             document.getElementById('proxy-url').value = localStorage.getItem('nexus_proxy_url') || '';
 
+            document.getElementById('model-refresh-status').innerHTML = 'Click to sync API access.';
+
             modal.classList.remove('hidden');
             void modal.offsetWidth;
             modal.classList.remove('opacity-0');
@@ -783,9 +905,7 @@
             localStorage.setItem('nexus_api_key', key);
             localStorage.setItem('nexus_proxy_url', proxy);
 
-            // Re-populate models based on new provider
-            populateModelDropdown();
-
+            populateModelDropdown(provider);
             showToast("AI Configuration saved securely.", "success");
             closeApiModal();
         }
