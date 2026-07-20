@@ -36,13 +36,11 @@
     <style>
         body { background-color: #121212; color: #E8EAED; }
         
-        /* Custom scrollbars */
         ::-webkit-scrollbar { width: 10px; }
         ::-webkit-scrollbar-track { background: #121212; }
         ::-webkit-scrollbar-thumb { background: #3A3A3A; border-radius: 5px; }
         ::-webkit-scrollbar-thumb:hover { background: #555555; }
 
-        /* Custom Checkbox */
         .custom-checkbox {
             appearance: none;
             width: 1.25rem;
@@ -71,11 +69,9 @@
             transform: rotate(45deg);
         }
 
-        /* Tabs styling */
         .tab-btn { transition: all 0.2s ease; border-bottom: 2px solid transparent; }
         .tab-btn.active { border-bottom: 2px solid #0057B8; color: white; background-color: #2D2D2D; }
 
-        /* Toast Notifications */
         #toast-container { position: fixed; bottom: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; }
         .toast { padding: 12px 20px; border-radius: 8px; font-weight: 500; color: white; opacity: 0; transform: translateY(20px); transition: all 0.3s ease; box-shadow: 0 4px 6px rgba(0,0,0,0.3); }
         .toast.show { opacity: 1; transform: translateY(0); }
@@ -123,14 +119,6 @@
                             </div>
                         </div>
 
-                        <div>
-                            <label class="text-brand font-semibold block mb-2">Primary AI Model (Fast Pass)</label>
-                            <select id="base-model-select" class="w-full bg-surface border border-gray-600 text-textMain rounded-md px-4 py-2 focus:outline-none focus:border-brand appearance-none cursor-pointer">
-                                <option value="">Select a model...</option>
-                                <!-- Populated via JS -->
-                            </select>
-                        </div>
-
                         <div class="grid grid-cols-2 gap-4">
                             <div>
                                 <label class="text-brand font-semibold block mb-2">Diagnostic Sample Size</label>
@@ -161,20 +149,16 @@
                         </div>
                         
                         <div id="fallback-settings" class="space-y-5 pt-2 transition-opacity duration-300">
-                            <div>
-                                <label class="text-white font-semibold block mb-2 text-sm">Advanced Fallback Model (Flagship Tier)</label>
-                                <select id="fallback-model-select" class="w-full bg-[#1e1e1e] border border-gray-600 text-white rounded-md px-4 py-3 focus:outline-none focus:border-brand appearance-none cursor-pointer">
-                                    <option value="">Select a model...</option>
-                                    <!-- Populated via JS -->
-                                </select>
-                            </div>
+                            <p class="text-sm text-textMain font-medium">
+                                Files classified with a confidence score below the threshold will be re-analyzed using your configured heavy Fallback Model.
+                            </p>
                             <div>
                                 <label class="text-white font-semibold block mb-2 text-sm">Certainty Threshold (%)</label>
                                 <input type="number" id="threshold-input" value="90" min="0" max="100" class="w-full bg-[#1e1e1e] border border-gray-600 text-textMain rounded-md px-4 py-3 focus:outline-none focus:border-brand">
                             </div>
-                            <p class="text-xs text-textMuted leading-relaxed">
-                                Files classified with a confidence score below this threshold will be re-analyzed using the heavier fallback model to ensure maximum routing accuracy.
-                            </p>
+                            <button onclick="openApiModal()" class="text-brand hover:text-brandHover text-sm font-semibold underline mt-2 block">
+                                Configure Advanced Models in AI Settings &rarr;
+                            </button>
                         </div>
                     </div>
 
@@ -205,7 +189,7 @@
                 <div id="oracle-settings" class="hidden space-y-4 border-l-4 border-brand pl-4 mt-4 transition-all duration-300">
                     <div class="bg-blue-900/20 text-blue-200 p-4 rounded-md text-sm border border-blue-800/50">
                         <strong>Cloud Acceleration Enabled 🚀</strong>
-                        To offload heavy processing from your device, file signatures will be securely transmitted to the Nexus Oracle node. Your files are never sent over the internet, only structural hashes.
+                        To offload heavy processing from your device, file signatures will be transmitted to the Nexus Oracle. Your files are never sent over the internet, only structural hashes.
                     </div>
                 </div>
 
@@ -234,18 +218,18 @@
             <div class="flex justify-between items-start mb-6">
                 <div>
                     <h2 class="text-2xl font-bold text-brand">Nexus AI Engine Setup</h2>
-                    <p class="text-textMuted mt-1">Connect your preferred AI provider to power the Organizer.</p>
+                    <p class="text-textMuted mt-1">Configure your LLM provider and select active models.</p>
                 </div>
                 <button onclick="closeApiModal()" class="text-gray-400 hover:text-white transition">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                 </button>
             </div>
 
-            <div class="space-y-6">
+            <div class="space-y-5 max-h-[60vh] overflow-y-auto custom-scrollbar pr-2">
                 <div>
                     <label class="block text-sm font-semibold text-gray-300 mb-2">Select AI Provider</label>
                     <select id="api-provider" onchange="updateApiInstructions()" class="w-full bg-surface border border-gray-600 text-white rounded-md px-4 py-3 focus:outline-none focus:border-brand appearance-none">
-                        <option value="gemini">Google Gemini (Default)</option>
+                        <option value="gemini">Google Gemini (Default - Multimodal Support)</option>
                         <option value="openai">ChatGPT / OpenAI</option>
                         <option value="claude">Claude / Anthropic (Advanced Proxy Required)</option>
                     </select>
@@ -270,16 +254,33 @@
                     </div>
                 </div>
 
-                <div class="flex items-center gap-4 bg-surface p-3 rounded-md border border-gray-700">
-                    <button onclick="refreshModels()" class="bg-card hover:bg-[#3A3A3A] border border-gray-500 text-white px-4 py-2 rounded-md text-sm font-bold transition flex items-center gap-2">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
-                        Fetch Available Models
-                    </button>
-                    <p id="model-refresh-status" class="text-sm text-textMuted flex-grow">Click to sync API access.</p>
+                <div class="flex flex-col gap-3 bg-surface p-4 rounded-md border border-gray-700">
+                    <div class="flex items-center gap-4">
+                        <button onclick="refreshModels()" class="bg-card hover:bg-[#3A3A3A] border border-gray-500 text-white px-4 py-2 rounded-md text-sm font-bold transition flex items-center gap-2">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                            Fetch Available Models
+                        </button>
+                        <p id="model-refresh-status" class="text-sm text-textMuted flex-grow">Click to sync API access.</p>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
+                        <div>
+                            <label class="text-brand font-semibold block mb-1 text-xs">Primary AI Model (Fast Pass)</label>
+                            <select id="base-model-select" class="w-full bg-[#1e1e1e] border border-gray-600 text-white rounded-md px-3 py-2 text-sm focus:outline-none focus:border-brand appearance-none cursor-pointer">
+                                <option value="">(Fetch models first)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="text-brand font-semibold block mb-1 text-xs">Fallback Model (Deep Analysis)</label>
+                            <select id="fallback-model-select" class="w-full bg-[#1e1e1e] border border-gray-600 text-white rounded-md px-3 py-2 text-sm focus:outline-none focus:border-brand appearance-none cursor-pointer">
+                                <option value="">(Fetch models first)</option>
+                            </select>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <div class="flex justify-between items-center mt-8 pt-6 border-t border-surface">
+            <div class="flex justify-between items-center mt-6 pt-6 border-t border-surface">
                 <button onclick="closeApiModal()" class="text-textMuted hover:text-white transition px-4 py-2">Cancel</button>
                 <button onclick="saveApiSettings()" class="bg-brand hover:bg-brandHover text-white px-6 py-2 rounded-md font-bold transition shadow-md">Save Configuration</button>
             </div>
@@ -287,12 +288,10 @@
     </div>
 
     <script>
-        // --- STREAMING_CHUNK:Initializing Application State... ---
         let rootDirectoryHandle = null;
         let isProcessing = false;
         const ORACLE_WS_URL = "wss://oracle.dadianhosted.com:8443"; 
 
-        // --- UI UTILITIES ---
         function switchTab(tabId) {
             document.getElementById('tab-organizer').classList.add('hidden');
             document.getElementById('tab-deduplicator').classList.add('hidden');
@@ -324,7 +323,6 @@
         }
 
         // --- STREAMING_CHUNK:Building Dynamic API Loader... ---
-        // --- API MODEL FETCHING & POPULATION ---
         async function refreshModels() {
             const provider = document.getElementById('api-provider').value;
             const key = document.getElementById('api-key').value.trim();
@@ -336,7 +334,7 @@
                 return;
             }
 
-            statusEl.innerHTML = `<span class="text-brand">Fetching available models...</span>`;
+            statusEl.innerHTML = `<span class="text-brand">Fetching models securely...</span>`;
             let availableModels = [];
 
             try {
@@ -361,10 +359,8 @@
                         .map(m => ({ id: m.id, name: m.id }));
                 } 
                 else if (provider === 'claude') {
-                    // Anthropic does not have a standard dynamic /models endpoint for end-users, 
-                    // so we supply the standard updated list.
                     availableModels = [
-                        { id: "claude-3-5-sonnet-20240620", name: "Claude 3.5 Sonnet (Latest)" },
+                        { id: "claude-3-5-sonnet-20240620", name: "Claude 3.5 Sonnet" },
                         { id: "claude-3-opus-20240229", name: "Claude 3 Opus" },
                         { id: "claude-3-haiku-20240307", name: "Claude 3 Haiku" }
                     ];
@@ -375,7 +371,7 @@
                     populateModelDropdown(provider);
                     statusEl.innerHTML = `<span class="text-[#4ade80] font-bold">Success! Loaded ${availableModels.length} models.</span>`;
                 } else {
-                    statusEl.innerHTML = `<span class="text-warning">Key valid, but no generation models found.</span>`;
+                    statusEl.innerHTML = `<span class="text-warning">Key valid, but no models found.</span>`;
                 }
 
             } catch (err) {
@@ -395,78 +391,68 @@
             const storedModels = localStorage.getItem(`nexus_models_${provider}`);
             if (storedModels) {
                 const models = JSON.parse(storedModels);
-                models.forEach(model => {
+                
+                let bestFastIdx = 0, bestHeavyIdx = 0;
+                let highestFastScore = -999, highestHeavyScore = -999;
+
+                models.forEach((model, idx) => {
                     const opt1 = document.createElement('option');
                     opt1.value = model.id; opt1.textContent = model.name;
-                    
                     const opt2 = document.createElement('option');
                     opt2.value = model.id; opt2.textContent = model.name;
 
                     baseSelect.appendChild(opt1);
                     fallbackSelect.appendChild(opt2);
-                });
 
-                // Smart Selection Logic: Evaluate models based on keywords and version numbers
-                let bestFastIdx = 0;
-                let bestHeavyIdx = 0;
-                let highestFastScore = -999;
-                let highestHeavyScore = -999;
+                    const name = model.id.toLowerCase();
+                    let fastScore = 0, heavyScore = 0;
 
-                models.forEach((m, idx) => {
-                    const name = m.id.toLowerCase();
-                    let fastScore = 0;
-                    let heavyScore = 0;
-
-                    // Score for Fast/Primary Model (Prefer flash, mini, haiku)
                     if (name.includes('flash')) fastScore += 20;
                     if (name.includes('mini')) fastScore += 20;
                     if (name.includes('haiku')) fastScore += 20;
-                    if (name.includes('preview') || name.includes('latest')) fastScore += 5; 
                     if (name.includes('pro')) fastScore -= 10;
                     if (name.includes('opus')) fastScore -= 10;
                     
-                    // Score for Heavy/Fallback Model (Prefer pro, opus, gpt-4/5)
                     if (name.includes('pro')) heavyScore += 20;
                     if (name.includes('opus')) heavyScore += 20;
                     if (name.includes('gpt-4') || name.includes('gpt-5')) heavyScore += 20;
-                    if (name.includes('sonnet')) heavyScore += 10;
-                    if (name.includes('preview') || name.includes('latest')) heavyScore += 5;
                     if (name.includes('flash')) heavyScore -= 10;
                     if (name.includes('mini')) heavyScore -= 10;
                     if (name.includes('haiku')) heavyScore -= 10;
 
-                    // Boost score for higher version numbers (e.g. gemini-1.5 vs gemini-2.0)
-                    const versionMatch = name.match(/\d+(\.\d+)?/);
-                    if (versionMatch) {
-                        const ver = parseFloat(versionMatch[0]);
-                        if (!isNaN(ver)) {
-                            fastScore += ver;
-                            heavyScore += ver;
-                        }
+                    const verMatch = name.match(/\d+(\.\d+)?/);
+                    if (verMatch) {
+                        const ver = parseFloat(verMatch[0]);
+                        if (!isNaN(ver)) { fastScore += ver; heavyScore += ver; }
                     }
 
-                    if (fastScore > highestFastScore) {
-                        highestFastScore = fastScore;
-                        bestFastIdx = idx;
-                    }
-                    if (heavyScore > highestHeavyScore) {
-                        highestHeavyScore = heavyScore;
-                        bestHeavyIdx = idx;
-                    }
+                    if (fastScore > highestFastScore) { highestFastScore = fastScore; bestFastIdx = idx; }
+                    if (heavyScore > highestHeavyScore) { highestHeavyScore = heavyScore; bestHeavyIdx = idx; }
                 });
 
                 if (models.length > 0) {
-                    baseSelect.selectedIndex = bestFastIdx;
-                    fallbackSelect.selectedIndex = bestHeavyIdx;
-                }
+                    // Try to load user's previous selection if it still exists
+                    const savedBase = localStorage.getItem('nexus_base_model');
+                    const savedFallback = localStorage.getItem('nexus_fallback_model');
+                    
+                    if (savedBase && Array.from(baseSelect.options).some(o => o.value === savedBase)) {
+                        baseSelect.value = savedBase;
+                    } else {
+                        baseSelect.selectedIndex = bestFastIdx;
+                    }
 
+                    if (savedFallback && Array.from(fallbackSelect.options).some(o => o.value === savedFallback)) {
+                        fallbackSelect.value = savedFallback;
+                    } else {
+                        fallbackSelect.selectedIndex = bestHeavyIdx;
+                    }
+                }
             } else {
-                baseSelect.innerHTML = '<option value="">(Please configure AI Settings and fetch models)</option>';
-                fallbackSelect.innerHTML = '<option value="">(Please configure AI Settings and fetch models)</option>';
+                baseSelect.innerHTML = '<option value="">(Please fetch models)</option>';
+                fallbackSelect.innerHTML = '<option value="">(Please fetch models)</option>';
             }
         }
 
-        // --- FILE SYSTEM ACCESS API ---
         async function requestDirectoryAccess() {
             try {
                 if (!('showDirectoryPicker' in window)) {
@@ -482,9 +468,34 @@
             }
         }
 
-        // --- STREAMING_CHUNK:Updating Universal LLM Translator... ---
-        // --- UNIVERSAL LLM TRANSLATOR ---
-        async function callLLM(prompt, systemInstruction, modelName, requireJsonArray = false, requireJsonObject = false) {
+        // --- STREAMING_CHUNK:Building Multimodal Binary Parser... ---
+        // Helper to convert Files to Base64 for Multimodal LLM ingestion
+        async function fileToBase64(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = () => {
+                    const result = reader.result;
+                    const base64Data = result.split(',')[1];
+                    resolve(base64Data);
+                };
+                reader.onerror = error => reject(error);
+            });
+        }
+
+        function getMimeTypeForGemini(filename) {
+            const ext = filename.split('.').pop().toLowerCase();
+            const map = {
+                'pdf': 'application/pdf',
+                'png': 'image/png', 'jpg': 'image/jpeg', 'jpeg': 'image/jpeg', 'webp': 'image/webp', 'heic': 'image/heic',
+                'mp3': 'audio/mp3', 'wav': 'audio/wav', 'ogg': 'audio/ogg',
+                'mp4': 'video/mp4', 'webm': 'video/webm', 'mov': 'video/mp4'
+            };
+            return map[ext] || null;
+        }
+
+        // --- STREAMING_CHUNK:Updating Universal LLM Translator for Multimodal... ---
+        async function callLLM(partsArray, systemInstruction, modelName, requireJsonArray = false, requireJsonObject = false) {
             const provider = localStorage.getItem('nexus_api_provider') || 'gemini';
             const apiKey = localStorage.getItem('nexus_api_key');
             const proxyUrl = localStorage.getItem('nexus_proxy_url');
@@ -495,7 +506,7 @@
             if (provider === 'gemini') {
                 const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`;
                 const body = {
-                    contents: [{ parts: [{ text: prompt }] }],
+                    contents: [{ parts: partsArray }],
                     systemInstruction: { parts: [{ text: systemInstruction }] },
                     generationConfig: {}
                 };
@@ -517,84 +528,62 @@
                 const data = await res.json();
                 return JSON.parse(data.candidates[0].content.parts[0].text);
 
-            } else if (provider === 'openai') {
-                const url = 'https://api.openai.com/v1/chat/completions';
+            } else {
+                // OpenAI/Claude Fallback: Extract only the text parts as they require complex formatting for images/files via API
+                let promptString = partsArray.filter(p => p.text).map(p => p.text).join('\n');
                 
-                let finalSys = systemInstruction;
-                if (requireJsonArray) finalSys += " Respond ONLY with a valid JSON array of strings.";
-                if (requireJsonObject) finalSys += " Respond ONLY with a valid JSON object containing strictly 'category' (string) and 'confidence' (integer 0-100).";
+                if (provider === 'openai') {
+                    const url = 'https://api.openai.com/v1/chat/completions';
+                    let finalSys = systemInstruction;
+                    if (requireJsonArray) finalSys += " Respond ONLY with a valid JSON array of strings.";
+                    if (requireJsonObject) finalSys += " Respond ONLY with a valid JSON object containing strictly 'category' (string) and 'confidence' (integer 0-100).";
 
-                const body = {
-                    model: modelName,
-                    messages: [{ role: "system", content: finalSys }, { role: "user", content: prompt }]
-                };
-                if (requireJsonArray || requireJsonObject) body.response_format = { type: "json_object" };
+                    const body = {
+                        model: modelName,
+                        messages: [{ role: "system", content: finalSys }, { role: "user", content: promptString }]
+                    };
+                    if (requireJsonArray || requireJsonObject) body.response_format = { type: "json_object" };
 
-                const res = await fetch(url, { 
-                    method: 'POST', 
-                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` }, 
-                    body: JSON.stringify(body) 
-                });
-                if (!res.ok) throw new Error(`OpenAI API Error: ${res.statusText}`);
-                const data = await res.json();
-                
-                let text = data.choices[0].message.content;
-                if (requireJsonArray && !text.trim().startsWith('[')) {
-                    const obj = JSON.parse(text);
-                    text = JSON.stringify(Object.values(obj)[0]);
+                    const res = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` }, body: JSON.stringify(body) });
+                    if (!res.ok) throw new Error(`OpenAI API Error: ${res.statusText}`);
+                    const data = await res.json();
+                    
+                    let text = data.choices[0].message.content;
+                    if (requireJsonArray && !text.trim().startsWith('[')) text = JSON.stringify(Object.values(JSON.parse(text))[0]);
+                    return JSON.parse(text);
+
+                } else if (provider === 'claude') {
+                    if (!proxyUrl) throw new Error("Claude requires a Cloudflare Proxy URL.");
+                    const url = `${proxyUrl.replace(/\/$/, "")}/v1/messages`;
+                    let finalPrompt = promptString;
+                    if (requireJsonArray) finalPrompt += "\n\nRespond ONLY with a valid JSON array of strings.";
+                    if (requireJsonObject) finalPrompt += "\n\nRespond ONLY with a valid JSON object strictly with 'category' and 'confidence'.";
+
+                    const res = await fetch(url, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01' },
+                        body: JSON.stringify({ model: modelName, system: systemInstruction, messages: [{ role: "user", content: finalPrompt }], max_tokens: 1024 })
+                    });
+                    if (!res.ok) throw new Error(`Claude API Error: ${res.statusText}`);
+                    const data = await res.json();
+                    let text = data.content[0].text.trim().replace(/```json\n?/g, '').replace(/```\n?/g, ''); 
+                    return JSON.parse(text);
                 }
-                return JSON.parse(text);
-
-            } else if (provider === 'claude') {
-                if (!proxyUrl) throw new Error("Claude requires a Cloudflare Proxy URL.");
-                const cleanProxy = proxyUrl.replace(/\/$/, "");
-                const url = `${cleanProxy}/v1/messages`;
-                
-                let finalPrompt = prompt;
-                if (requireJsonArray) finalPrompt += "\n\nRespond ONLY with a valid JSON array of strings. Do not include markdown blocks or conversational text.";
-                if (requireJsonObject) finalPrompt += "\n\nRespond ONLY with a valid JSON object containing strictly 'category' (string) and 'confidence' (integer 0-100). Do not include markdown blocks.";
-
-                const body = {
-                    model: modelName,
-                    system: systemInstruction,
-                    messages: [{ role: "user", content: finalPrompt }],
-                    max_tokens: 1024
-                };
-                
-                const res = await fetch(url, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01' },
-                    body: JSON.stringify(body)
-                });
-                if (!res.ok) throw new Error(`Claude API Error: ${res.statusText}`);
-                const data = await res.json();
-                let text = data.content[0].text.trim();
-                text = text.replace(/```json\n?/g, '').replace(/```\n?/g, ''); 
-                return JSON.parse(text);
             }
         }
 
-        // --- STREAMING_CHUNK:Implementing the advanced Regeneration and Classification Loop... ---
-        // --- REAL AI PROCESSES ---
+        // --- STREAMING_CHUNK:Implementing Multimodal Classification Loop... ---
         async function runActualAnalysis() {
-            if (!rootDirectoryHandle) {
-                showToast("Please link a Local Node first.", "warning");
-                return;
-            }
+            if (!rootDirectoryHandle) { showToast("Please link a Local Node first.", "warning"); return; }
             if (isProcessing) return;
             isProcessing = true;
 
-            const baseModel = document.getElementById('base-model-select').value;
-            if (!baseModel) {
-                showToast("Please open AI Settings and fetch models first.", "error");
-                isProcessing = false;
-                return;
-            }
+            const baseModel = localStorage.getItem('nexus_base_model') || document.getElementById('base-model-select').value;
+            if (!baseModel) { showToast("Please open AI Settings, fetch models, and save configuration.", "error"); isProcessing = false; return; }
 
             const container = document.getElementById('organizer-container');
             const initBtn = document.getElementById('btn-initiate');
-            initBtn.disabled = true;
-            initBtn.classList.add('opacity-50', 'cursor-not-allowed');
+            initBtn.disabled = true; initBtn.classList.add('opacity-50', 'cursor-not-allowed');
 
             const updateStatus = (msg) => {
                 container.innerHTML = `
@@ -622,25 +611,35 @@
 
                 if (files.length === 0) {
                     container.innerHTML = "<span class='text-warning font-bold'>No files found to organize.</span>";
-                    isProcessing = false;
-                    initBtn.disabled = false;
-                    initBtn.classList.remove('opacity-50', 'cursor-not-allowed');
-                    return;
+                    isProcessing = false; initBtn.disabled = false; initBtn.classList.remove('opacity-50', 'cursor-not-allowed'); return;
                 }
 
-                updateStatus(`Extracting textual context from ${files.length} files...`);
-                let sampleText = "";
+                updateStatus(`Extracting multimodal context from ${files.length} files...`);
+                let sampleParts = [{ text: "Analyze the following files to propose organizational categories:\n" }];
                 const sampleSize = parseInt(document.getElementById('sample-size-input').value) || 20;
                 const shuffled = files.sort(() => 0.5 - Math.random()).slice(0, sampleSize);
                 
+                let multimodalAdded = 0;
                 for (let f of shuffled) {
                     try {
                         const file = await f.handle.getFile();
-                        if (file.size > 0 && file.size < 5000000) { // Limit to 5MB files for sampling
-                            const text = await file.slice(0, 800).text();
-                            sampleText += `\n--- File: ${f.handle.name} ---\n${text.substring(0, 400)}\n`;
+                        const mime = getMimeTypeForGemini(f.handle.name);
+                        const isText = ['txt', 'md', 'csv', 'json', 'js', 'html', 'css', 'py'].includes(f.handle.name.split('.').pop().toLowerCase());
+                        
+                        sampleParts.push({ text: `\n--- File: ${f.handle.name} ---` });
+
+                        if (isText && file.size < 2000000) {
+                            const text = await file.slice(0, 1000).text();
+                            sampleParts.push({ text: `\nSnippet:\n${text.substring(0, 500)}\n` });
+                        } else if (mime && file.size < 4000000 && multimodalAdded < 5) {
+                            // Only append full binary base64 for the first 5 files in the sample to keep initial payload reasonable
+                            const b64 = await fileToBase64(file);
+                            sampleParts.push({ inlineData: { mimeType: mime, data: b64 } });
+                            multimodalAdded++;
+                        } else {
+                            sampleParts.push({ text: `\n[Binary or Large File - Rely on filename and extension for context]` });
                         }
-                    } catch(e) { /* Ignore unreadable files in sample */ }
+                    } catch(e) { /* Ignore unreadable files */ }
                 }
 
                 let approvedCategories = [];
@@ -648,9 +647,8 @@
                 const maxCat = parseInt(document.getElementById('max-categories-input').value) || 5;
                 const hint = document.getElementById('oracle-hint-input').value || "General files";
                 
-                // Use the heavier fallback model to generate categories if fallback is enabled
                 const genModel = document.getElementById('fallback-check').checked 
-                                    ? document.getElementById('fallback-model-select').value 
+                                    ? (localStorage.getItem('nexus_fallback_model') || document.getElementById('fallback-model-select').value)
                                     : baseModel;
 
                 // --- The Regeneration Loop ---
@@ -662,11 +660,11 @@
                         sysPrompt += `\nCRITICAL RESTRICTION: The user explicitly rejected these categories: ${JSON.stringify(rejectedCategories)}. Do NOT propose them again.`;
                     }
                     
-                    const prompt = `Analyze content samples. Context: '${hint}'. Propose effective category names (1 to ${maxCat}).\nContent:\n${sampleText}`;
+                    sampleParts.push({ text: `\nBased on all the files provided above, propose effective category names (1 to ${maxCat}). Context: '${hint}'.` });
                     
-                    const proposedCategories = await callLLM(prompt, sysPrompt, genModel, true, false);
+                    const proposedCategories = await callLLM(sampleParts, sysPrompt, genModel, true, false);
 
-                    // Render interactive checklist UI and wait for user response
+                    // Render interactive checklist UI
                     const decision = await new Promise((resolve) => {
                         let checkboxesHTML = proposedCategories.map((cat, idx) => `
                             <div class="flex items-center gap-3 bg-[#2D2D2D] px-4 py-3 rounded-md border border-gray-600 w-full shadow-sm hover:border-brand transition">
@@ -689,65 +687,57 @@
                             </div>
                         `;
 
-                        document.getElementById('btn-approve').onclick = () => {
-                            const checked = Array.from(document.querySelectorAll('.cat-checkbox:checked')).map(cb => cb.value);
-                            if (checked.length === 0) {
-                                showToast("Please select at least one category to authorize.", "warning");
-                                return;
-                            }
-                            resolve({ action: 'approve', checked: checked });
-                        };
-
-                        document.getElementById('btn-regenerate').onclick = () => {
-                            const unchecked = Array.from(document.querySelectorAll('.cat-checkbox:not(:checked)')).map(cb => cb.value);
-                            if (unchecked.length === 0) {
-                                showToast("Uncheck the categories you want to recalibrate first.", "info");
-                                return;
-                            }
-                            resolve({ action: 'regenerate', unchecked: unchecked });
-                        };
-
+                        document.getElementById('btn-approve').onclick = () => resolve({ action: 'approve', checked: Array.from(document.querySelectorAll('.cat-checkbox:checked')).map(cb => cb.value) });
+                        document.getElementById('btn-regenerate').onclick = () => resolve({ action: 'regenerate', unchecked: Array.from(document.querySelectorAll('.cat-checkbox:not(:checked)')).map(cb => cb.value) });
                         document.getElementById('btn-cancel').onclick = () => resolve({ action: 'cancel' });
                     });
 
                     if (decision.action === 'cancel') {
                         container.innerHTML = "<span class='text-warning font-bold text-center'>Sort cancelled by user. Awaiting new instructions.</span>";
-                        isProcessing = false;
-                        initBtn.disabled = false;
-                        initBtn.classList.remove('opacity-50', 'cursor-not-allowed');
-                        return;
+                        isProcessing = false; initBtn.disabled = false; initBtn.classList.remove('opacity-50', 'cursor-not-allowed'); return;
                     } else if (decision.action === 'regenerate') {
-                        rejectedCategories.push(...decision.unchecked);
-                        // Loop continues
+                        if(decision.unchecked.length > 0) rejectedCategories.push(...decision.unchecked);
+                        sampleParts.pop(); // Remove the last instructional prompt so we can append a fresh one next loop
                     } else if (decision.action === 'approve') {
+                        if (decision.checked.length === 0) { showToast("Please authorize at least one category.", "warning"); continue; }
                         approvedCategories = decision.checked;
-                        // Loop terminates
                     }
                 }
 
                 // --- Streaming File Processing Phase ---
                 const useFallback = document.getElementById('fallback-check').checked;
                 const threshold = parseInt(document.getElementById('threshold-input').value) || 90;
-                const fallbackModel = document.getElementById('fallback-model-select').value;
+                const fallbackModel = localStorage.getItem('nexus_fallback_model') || document.getElementById('fallback-model-select').value;
                 
                 let processed = 0;
                 for (let f of files) {
                     processed++;
                     updateStatus(`Sorting file ${processed} of ${files.length}: <br><span class="text-brand text-sm">${f.handle.name}</span>`);
                     
-                    const sysPromptClassify = `You are a file classifier. Context: ${hint}. Select BEST fit from: ${JSON.stringify(approvedCategories)}. If it does not fit ANY perfectly, category MUST be "Uncategorized".`;
+                    const sysPromptClassify = `You are a file classifier. Context: ${hint}. Choose the closest conceptual match from this exact list: ${JSON.stringify(approvedCategories)}. Make your absolute best guess based on the file content or name. Do not use 'Uncategorized' unless completely unrelated.`;
                     
-                    let fileTextSnippet = "";
+                    let fileParts = [];
+                    const mime = getMimeTypeForGemini(f.handle.name);
+                    const isText = ['txt', 'md', 'csv', 'json', 'js', 'html', 'css', 'py'].includes(f.handle.name.split('.').pop().toLowerCase());
+
                     try {
                         const file = await f.handle.getFile();
-                        if (file.size < 5000000) fileTextSnippet = await file.slice(0, 800).text();
-                    } catch(e) {}
+                        if (isText && file.size < 2000000) {
+                            fileParts.push({ text: `Snippet:\n${await file.slice(0, 1500).text()}` });
+                        } else if (mime && file.size < 4000000) { // Limit inline base64 to 4MB per file during processing loop
+                            const b64 = await fileToBase64(file);
+                            fileParts.push({ inlineData: { mimeType: mime, data: b64 } });
+                        } else {
+                            fileParts.push({ text: `[File content unavailable or too large. Rely entirely on the filename for context.]` });
+                        }
+                    } catch(e) {
+                         fileParts.push({ text: `[File content unreadable. Rely entirely on filename.]` });
+                    }
 
-                    const promptText = `Classify this file named "${f.handle.name}" based on its metadata and snippet:\n${fileTextSnippet.substring(0, 400)}`;
+                    fileParts.push({ text: `Classify this file. Filename: "${f.handle.name}"` });
 
                     // Initial Base Evaluation
-                    let baseResult = await callLLM(promptText, sysPromptClassify, baseModel, false, true);
-                    
+                    let baseResult = await callLLM(fileParts, sysPromptClassify, baseModel, false, true);
                     let finalCategory = baseResult.category;
                     let finalConfidence = parseInt(baseResult.confidence) || 0;
 
@@ -755,21 +745,15 @@
                     if (useFallback && finalConfidence <= threshold) {
                         updateStatus(`Escalating file ${processed} to Deep Analysis (${fallbackModel})...<br><span class="text-brand text-sm">${f.handle.name}</span>`);
                         try {
-                            const fallbackResult = await callLLM(promptText, sysPromptClassify, fallbackModel, false, true);
+                            const fallbackResult = await callLLM(fileParts, sysPromptClassify, fallbackModel, false, true);
                             finalCategory = fallbackResult.category;
-                        } catch(e) {
-                            console.warn("Fallback failed, using base result.", e);
-                        }
+                        } catch(e) { console.warn("Fallback failed, using base result."); }
                     }
 
                     // Strict validation
                     const lowerCategories = approvedCategories.map(c => c.toLowerCase());
                     const matchIndex = lowerCategories.indexOf(finalCategory.toLowerCase());
-                    if (matchIndex !== -1) {
-                        finalCategory = approvedCategories[matchIndex];
-                    } else {
-                        finalCategory = "Uncategorized";
-                    }
+                    finalCategory = (matchIndex !== -1) ? approvedCategories[matchIndex] : "Uncategorized";
 
                     // Move File
                     const targetDirHandle = await rootDirectoryHandle.getDirectoryHandle(finalCategory, { create: true });
@@ -784,7 +768,7 @@
                             await writable.close();
                             await f.parent.removeEntry(f.handle.name);
                         }
-                    } catch(e) { console.error(`Move failed for ${f.handle.name}`, e); }
+                    } catch(e) { console.error(`Move failed for ${f.handle.name}`); }
                 }
 
                 container.innerHTML = `<span class='text-[#4ade80] font-bold text-2xl text-center py-8 block'>Sort Complete! Organized ${files.length} files.</span>`;
@@ -802,10 +786,7 @@
 
         // --- DUPLICATE SIMULATION ---
         function simulateScan() {
-            if (!rootDirectoryHandle) {
-                showToast("Please link a Local Sector first.", "warning");
-                return;
-            }
+            if (!rootDirectoryHandle) { showToast("Please link a Local Sector first.", "warning"); return; }
             const isLocal = document.getElementById('local-process-check').checked;
             
             document.getElementById('dedupe-status').innerHTML = `
@@ -816,7 +797,7 @@
             `;
         }
 
-        // --- API MODAL & SETTINGS ---
+        // --- API MODAL & SETTINGS LOGIC ---
         const instructions = {
             gemini: `
                 <ol class="list-decimal pl-4 space-y-1">
@@ -839,37 +820,26 @@
                     Advanced Setup Required
                 </div>
                 <p class="mb-2 text-xs">Anthropic blocks browsers from making direct API calls. You must deploy a tiny, free proxy server on your Cloudflare account to route requests securely.</p>
-                <ol class="list-decimal pl-4 space-y-1">
-                    <li>Get your key from the <a href="https://console.anthropic.com/" target="_blank" class="text-brand hover:underline">Anthropic Console</a>.</li>
-                    <li>Deploy the <a href="#" class="text-brand hover:underline">Nexus Proxy Template</a> to Cloudflare Workers.</li>
-                    <li>Paste your Proxy URL and API Key below.</li>
-                </ol>
             `
         };
 
         function updateApiInstructions() {
             const provider = document.getElementById('api-provider').value;
             document.getElementById('instructions-box').innerHTML = instructions[provider];
-            
-            if (provider === 'claude') {
-                document.getElementById('proxy-input-group').classList.remove('hidden');
-            } else {
-                document.getElementById('proxy-input-group').classList.add('hidden');
-            }
+            document.getElementById('proxy-input-group').classList.toggle('hidden', provider !== 'claude');
         }
 
         function openApiModal() {
             const modal = document.getElementById('api-modal');
             const content = document.getElementById('api-modal-content');
             
-            const savedProvider = localStorage.getItem('nexus_api_provider') || 'gemini';
-            document.getElementById('api-provider').value = savedProvider;
+            document.getElementById('api-provider').value = localStorage.getItem('nexus_api_provider') || 'gemini';
             updateApiInstructions();
-            
             document.getElementById('api-key').value = localStorage.getItem('nexus_api_key') || '';
             document.getElementById('proxy-url').value = localStorage.getItem('nexus_proxy_url') || '';
-
-            document.getElementById('model-refresh-status').innerHTML = 'Click to sync API access.';
+            
+            // Re-populate dropdowns if models were previously fetched
+            populateModelDropdown(document.getElementById('api-provider').value);
 
             modal.classList.remove('hidden');
             void modal.offsetWidth;
@@ -880,10 +850,8 @@
         function closeApiModal() {
             const modal = document.getElementById('api-modal');
             const content = document.getElementById('api-modal-content');
-            
             modal.classList.add('opacity-0');
             content.classList.add('scale-95');
-            
             setTimeout(() => modal.classList.add('hidden'), 300); 
         }
 
@@ -891,21 +859,19 @@
             const provider = document.getElementById('api-provider').value;
             const key = document.getElementById('api-key').value.trim();
             const proxy = document.getElementById('proxy-url').value.trim();
+            const baseModel = document.getElementById('base-model-select').value;
+            const fallbackModel = document.getElementById('fallback-model-select').value;
 
-            if (!key) {
-                showToast("Please enter an API key.", "error");
-                return;
-            }
-            if (provider === 'claude' && !proxy) {
-                showToast("Cloudflare Proxy URL is required for Claude.", "error");
-                return;
-            }
+            if (!key) { showToast("Please enter an API key.", "error"); return; }
+            if (provider === 'claude' && !proxy) { showToast("Cloudflare Proxy URL is required for Claude.", "error"); return; }
+            if (!baseModel) { showToast("Please fetch and select models.", "error"); return; }
 
             localStorage.setItem('nexus_api_provider', provider);
             localStorage.setItem('nexus_api_key', key);
             localStorage.setItem('nexus_proxy_url', proxy);
+            localStorage.setItem('nexus_base_model', baseModel);
+            localStorage.setItem('nexus_fallback_model', fallbackModel);
 
-            populateModelDropdown(provider);
             showToast("AI Configuration saved securely.", "success");
             closeApiModal();
         }
@@ -915,14 +881,9 @@
             input.type = input.type === 'password' ? 'text' : 'password';
         }
 
-        // Initialize UI
         document.addEventListener('DOMContentLoaded', () => {
             updateApiInstructions();
-            populateModelDropdown();
-            
-            if (!localStorage.getItem('nexus_api_key')) {
-                setTimeout(openApiModal, 500);
-            }
+            if (!localStorage.getItem('nexus_api_key')) setTimeout(openApiModal, 500);
         });
 
     </script>
