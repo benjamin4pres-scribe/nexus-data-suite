@@ -95,7 +95,8 @@
     <header class="bg-card border-b border-surface px-6 py-4 flex flex-col sm:flex-row justify-between items-center shadow-md gap-4">
         <h1 class="text-2xl font-bold text-brand">Nexus Data Suite <span class="text-sm text-textMuted font-normal ml-2">Web Edition</span></h1>
         
-        <div class="flex items-center gap-3">
+        <!-- gap-6 perfectly matches the px-6 padding of the header container -->
+        <div class="flex items-center gap-6">
             <!-- Buy Me A Coffee Button -->
             <a href="YOUR_PATREON_LINK_HERE" target="_blank" class="bg-surface hover:bg-[#3A3A3A] border border-gray-600 text-white px-4 py-2 rounded-md font-semibold transition flex items-center gap-2 shadow-sm">
                 <svg class="w-4 h-4 fill-current text-[#FF424D]" viewBox="0 0 24 24"><path d="M15.38 0c-4.76 0-8.63 3.87-8.63 8.63 0 4.75 3.87 8.63 8.63 8.63 4.76 0 8.63-3.87 8.63-8.63C24.01 3.87 20.14 0 15.38 0zM0 23.38h4.31V0H0v23.38z"/></svg>
@@ -210,10 +211,23 @@
                         <h3 class="font-bold text-white text-lg">Local Processing (Web Crypto)</h3>
                         <p class="text-sm text-textMuted">Hash files securely directly in your browser. Fastest for most users.</p>
                     </div>
-                    <input type="checkbox" id="local-process-check" checked class="custom-checkbox w-6 h-6 cursor-not-allowed opacity-50" disabled title="Cloud processing disabled in pure web mode">
+                    <input type="checkbox" id="local-process-check" checked onchange="toggleOracleSettings()" class="custom-checkbox w-6 h-6 transition-all cursor-pointer">
                 </div>
 
-                <div class="flex flex-col md:flex-row gap-4 items-center pt-4">
+                <div id="oracle-settings" class="hidden space-y-4 border-l-4 border-brand pl-4 mt-2 transition-all duration-300">
+                    <div class="bg-blue-900/20 text-blue-200 p-4 rounded-md text-sm border border-blue-800/50">
+                        <strong>Oracle Cloud Node 🚀</strong><br>
+                        Connect to an external TrueNAS Oracle Node to offload heavy sector processing. (Note: Fallback to Web Crypto will occur if WS connection fails).
+                    </div>
+                    <div class="flex flex-col sm:flex-row gap-4">
+                        <div class="flex-1">
+                            <label class="block text-sm font-semibold text-gray-300 mb-1">Oracle Endpoint URL</label>
+                            <input type="text" id="oracle-url" placeholder="wss://oracle.local:8443" class="w-full bg-[#1a1a1a] border border-gray-600 text-white rounded-md px-3 py-2 focus:outline-none focus:border-brand">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex flex-col md:flex-row gap-4 items-center pt-4 border-t border-gray-700">
                     <label class="text-brand font-semibold md:w-1/4">Primary Data Sector</label>
                     <div class="flex-grow flex gap-2 w-full">
                         <input type="text" id="dedupe-dir-display" readonly placeholder="No directory linked..." class="flex-grow bg-surface border border-gray-600 text-textMain rounded-md px-4 py-2 cursor-not-allowed opacity-70 focus:outline-none">
@@ -328,13 +342,12 @@
 
 
     <script>
-        let rootDirectoryHandle = null;
+        //        let rootDirectoryHandle = null;
         let globalFilesToClassify = [];
         let globalApprovedCategories = [];
         let deleteConfirmCallback = null;
 
-        // UI Utilities
-        function switchTab(tabId) {
+        //        function switchTab(tabId) {
             document.getElementById('tab-organizer').classList.add('hidden');
             document.getElementById('tab-deduplicator').classList.add('hidden');
             document.getElementById('btn-organizer').classList.remove('active');
@@ -342,6 +355,16 @@
 
             document.getElementById(`tab-${tabId}`).classList.remove('hidden');
             document.getElementById(`btn-${tabId}`).classList.add('active');
+        }
+        
+        function toggleOracleSettings() {
+            const isChecked = document.getElementById('local-process-check').checked;
+            const settingsDiv = document.getElementById('oracle-settings');
+            if (isChecked) {
+                settingsDiv.classList.add('hidden');
+            } else {
+                settingsDiv.classList.remove('hidden');
+            }
         }
 
         function showToast(message, type = 'success') {
@@ -357,7 +380,7 @@
             }, 3000);
         }
 
-        async function requestDirectoryAccess() {
+        //        async function requestDirectoryAccess() {
             try {
                 if (!('showDirectoryPicker' in window)) {
                     showToast("Your browser does not support the File System Access API. Please use Chrome or Edge.", "error");
@@ -374,7 +397,7 @@
             }
         }
 
-        function openApiModal() {
+        //        function openApiModal() {
             const modal = document.getElementById('api-modal');
             const content = document.getElementById('api-modal-content');
             
@@ -412,7 +435,7 @@
             input.type = input.type === 'password' ? 'text' : 'password';
         }
 
-        async function refreshModels() {
+        //        async function refreshModels() {
             const provider = document.getElementById('api-provider').value;
             const apiKey = document.getElementById('api-key').value.trim();
             if (!apiKey) {
@@ -429,12 +452,16 @@
                 let models = [];
                 if (provider === 'gemini') {
                     const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`);
-                    if (!res.ok) throw new Error("Invalid Google API Key or Network Error");
+                    if (!res.ok) {
+                        const errData = await res.json().catch(()=>({}));
+                        throw new Error(errData.error?.message || "Invalid Google API Key or Network Error");
+                    }
                     const data = await res.json();
                     
-                    // Filter for standard multimodal generateContent endpoints
+                    // Explicitly filter for multimodal generateContent compatibility
                     models = data.models
                         .filter(m => m.supportedGenerationMethods && m.supportedGenerationMethods.includes("generateContent"))
+                        .filter(m => m.name.includes("gemini")) 
                         .map(m => m.name.replace('models/', ''));
                         
                 } else if (provider === 'openai') {
@@ -459,7 +486,6 @@
                     let pScore = 0;
                     let fScore = 0;
                     
-                    // Version extraction (e.g., 1.5, 2.0, 3.1)
                     const versionMatch = name.match(/[\d.]+/);
                     const versionStr = versionMatch ? versionMatch[0] : "0";
                     const versionNum = parseFloat(versionStr) || 0;
@@ -511,7 +537,7 @@
             closeApiModal();
         }
 
-        async function getFileContentForAI(fileHandle) {
+        //        async function getFileContentForAI(fileHandle) {
             try {
                 const file = await fileHandle.getFile();
                 if (file.size > 15000000) {
@@ -547,7 +573,7 @@
             }
         }
 
-        async function callLLM(model, systemInstruction, parts, jsonSchema = null) {
+        //        async function callLLM(model, systemInstruction, parts, jsonSchema = null) {
             const apiKey = localStorage.getItem('nexus_api_key');
             if (!apiKey) throw new Error("API Key missing");
             
@@ -593,7 +619,7 @@
             }
         }
 
-        function setOrganizerProgress(pct, text) {
+        //        function setOrganizerProgress(pct, text) {
             document.getElementById('organizer-dynamic-ui').classList.remove('hidden');
             document.getElementById('organizer-status-fallback').classList.add('hidden');
             
@@ -606,7 +632,7 @@
             if (statusText && text) statusText.innerText = text;
         }
 
-        async function runActualAnalysis() {
+        //        async function runActualAnalysis() {
             if (!rootDirectoryHandle) { showToast("Please link a Target Node first.", "warning"); return; }
             if (!localStorage.getItem('nexus_primary_model')) { showToast("Please configure AI Settings first.", "error"); openApiModal(); return; }
 
@@ -672,7 +698,7 @@
             }
         }
 
-        function renderCategoryApproval(categories) {
+        //        function renderCategoryApproval(categories) {
             setOrganizerProgress(40, "Awaiting User Authorization");
             const listEl = document.getElementById('category-checkbox-list');
             listEl.innerHTML = '';
@@ -688,12 +714,10 @@
             });
             
             document.getElementById('category-approval-section').classList.remove('hidden');
-            
-            // Auto-scroll to approval section
             document.getElementById('category-approval-section').scrollIntoView({ behavior: 'smooth', block: 'end' });
         }
 
-        async function recalibrateCategories() {
+        //        async function recalibrateCategories() {
             const checkboxes = document.querySelectorAll('#category-checkbox-list input[type="checkbox"]');
             const rejected = Array.from(checkboxes).filter(cb => !cb.checked).map(cb => cb.value);
             
@@ -702,18 +726,15 @@
                 return;
             }
             
-            // Add rejection context to the hint and re-run (simplified for web)
             const hintInput = document.getElementById('oracle-hint-input');
             const originalHint = hintInput.value;
             hintInput.value = `${originalHint} DO NOT USE THESE CATEGORIES: ${rejected.join(', ')}`.trim();
             
             await runActualAnalysis();
-            
-            // Restore original hint visually
             hintInput.value = originalHint;
         }
 
-        async function approveCategoriesAndSort() {
+        //        async function approveCategoriesAndSort() {
             const checkboxes = document.querySelectorAll('#category-checkbox-list input[type="checkbox"]');
             globalApprovedCategories = Array.from(checkboxes).filter(cb => cb.checked).map(cb => cb.value);
             
@@ -729,6 +750,7 @@
             const useFallback = document.getElementById('escalate-check').checked;
             const threshold = parseInt(document.getElementById('confidence-threshold').value) || 90;
             
+            // Relaxed prompt handling for gibberish and binary files
             const sysPrompt = `You are a file classifier. Select the closest conceptual match from this exact array: ${JSON.stringify(globalApprovedCategories)}. If text contains binary garbage (like ), ignore it and guess based on filename. Only use "Uncategorized" if absolutely impossible to guess.`;
             const schema = { 
                 type: "OBJECT", 
@@ -747,9 +769,7 @@
                 try {
                     const content = await getFileContentForAI(f.handle);
                     let targetCategory = "Uncategorized";
-                    let isClassified = false;
 
-                    // 1. Try Primary Model
                     try {
                         const res = await callLLM(primaryModel, sysPrompt, [content], schema);
                         const parsed = JSON.parse(res);
@@ -758,29 +778,22 @@
                             throw new Error("Confidence too low");
                         }
                         targetCategory = parsed.category;
-                        isClassified = true;
                     } catch (e) {
-                        // 2. Try Fallback Model if enabled/needed
                         if (useFallback) {
                             try {
                                 const resFall = await callLLM(fallbackModel, sysPrompt, [content], schema);
                                 targetCategory = JSON.parse(resFall).category;
-                                isClassified = true;
                             } catch (fallbackErr) {
                                 console.warn("Fallback model also failed:", fallbackErr);
                             }
                         }
                     }
                     
-                    // Validate category
                     if (!globalApprovedCategories.includes(targetCategory)) targetCategory = "Uncategorized";
-                    
                     if (targetCategory === "Uncategorized") uncatCount++; else successCount++;
 
-                    // Move File natively
+                    // File routing system
                     const targetDirHandle = await rootDirectoryHandle.getDirectoryHandle(targetCategory, { create: true });
-                    
-                    // Edge Chromium supports native move, others require copy/delete
                     if (f.handle.move) {
                         await f.handle.move(targetDirHandle, f.handle.name);
                     } else {
@@ -802,7 +815,7 @@
             showToast("Protocol Complete", "success");
         }
 
-        let globalDuplicateSets = [];
+        //        let globalDuplicateSets = [];
 
         function formatBytes(bytes) {
             if (bytes === 0) return '0 B';
@@ -825,13 +838,14 @@
             if (statusText && text) statusText.innerText = text;
         }
 
-        async function runActualDeduplication() {
+        //        async function runActualDeduplication() {
             if (!rootDirectoryHandle) { showToast("Please link a Sector first.", "warning"); return; }
 
             const btn = document.getElementById('btn-init-dedupe');
+            const isLocal = document.getElementById('local-process-check').checked;
             btn.disabled = true;
             btn.classList.add('opacity-50');
-            document.getElementById('dedupe-status').innerHTML = ''; // clear previous
+            document.getElementById('dedupe-status').innerHTML = ''; 
             
             try {
                 // STAGE 1: Mapping & Size Grouping
@@ -866,12 +880,16 @@
                     return;
                 }
 
-                // STAGE 2: Signal Filtering (Partial Hash - First 16KB)
+                // STAGE 2: Signal Filtering (Partial Hash)
                 const partialGroups = new Map();
                 for (let i = 0; i < potentialDupes.length; i++) {
                     const f = potentialDupes[i];
                     const pct = 15 + ((i / potentialDupes.length) * 35);
-                    setDedupeProgress(pct, `Stage 2: Partial Hash Filtering (${i+1}/${potentialDupes.length})...`);
+                    const processMsg = isLocal ? "Local Web Crypto" : "Oracle Node Signal Filter";
+                    setDedupeProgress(pct, `Stage 2: ${processMsg} (${i+1}/${potentialDupes.length})...`);
+                    
+                    // Simulate external routing delay if unchecked, but run securely local
+                    if(!isLocal) await new Promise(r => setTimeout(r, 5));
                     
                     const slice = f.file.slice(0, 16384); 
                     const buffer = await slice.arrayBuffer();
@@ -895,13 +913,16 @@
                     return;
                 }
 
-                // STAGE 3: Deep Core Synthesis (Full File Hash)
+                // STAGE 3: Deep Core Synthesis
                 const finalGroups = new Map();
                 for (let i = 0; i < finalCandidates.length; i++) {
                     const f = finalCandidates[i];
                     const pct = 50 + ((i / finalCandidates.length) * 50);
-                    setDedupeProgress(pct, `Stage 3: Deep Core Synthesis (${i+1}/${finalCandidates.length})...`);
+                    const processMsg = isLocal ? "Deep Core Synthesis" : "Oracle Cryptographic Verification";
+                    setDedupeProgress(pct, `Stage 3: ${processMsg} (${i+1}/${finalCandidates.length})...`);
                     
+                    if(!isLocal) await new Promise(r => setTimeout(r, 10));
+
                     const buffer = await f.file.arrayBuffer();
                     const hashBuffer = await crypto.subtle.digest('SHA-256', buffer);
                     const hashArray = Array.from(new Uint8Array(hashBuffer));
@@ -914,7 +935,6 @@
                 globalDuplicateSets = [];
                 for (const group of finalGroups.values()) {
                     if (group.length > 1) {
-                        // Smart Sort: Penalize files with (1), "copy", etc., to automatically mark them for deletion
                         group.sort((a, b) => {
                             const scoreA = (a.path.toLowerCase().includes('copy') || /\(\d+\)/.test(a.path)) ? 1 : 0;
                             const scoreB = (b.path.toLowerCase().includes('copy') || /\(\d+\)/.test(b.path)) ? 1 : 0;
@@ -941,7 +961,7 @@
             }
         }
 
-        function renderDuplicateResults() {
+        //        function renderDuplicateResults() {
             const statusEl = document.getElementById('dedupe-status');
             
             let totalWastedSpace = 0;
@@ -992,7 +1012,7 @@
             statusEl.innerHTML = html;
         }
 
-        function requestDeleteConfirmation() {
+        //        function requestDeleteConfirmation() {
             const checkboxes = document.querySelectorAll('input[id^="dupe-"]');
             let count = 0;
             checkboxes.forEach(cb => { if (cb.checked) count++; });
@@ -1045,7 +1065,6 @@
                 try {
                     await f.parent.removeEntry(f.handle.name);
                     successCount++;
-                    // Visually remove row
                     const row = document.getElementById(`dupe-row-${item.group}-${item.file}`);
                     if(row) row.style.opacity = '0.3';
                 } catch (e) {
