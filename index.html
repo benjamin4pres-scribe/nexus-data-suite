@@ -342,12 +342,12 @@
 
 
     <script>
-        //        let rootDirectoryHandle = null;
+        let rootDirectoryHandle = null;
         let globalFilesToClassify = [];
         let globalApprovedCategories = [];
         let deleteConfirmCallback = null;
 
-        //        function switchTab(tabId) {
+        function switchTab(tabId) {
             document.getElementById('tab-organizer').classList.add('hidden');
             document.getElementById('tab-deduplicator').classList.add('hidden');
             document.getElementById('btn-organizer').classList.remove('active');
@@ -380,7 +380,7 @@
             }, 3000);
         }
 
-        //        async function requestDirectoryAccess() {
+        async function requestDirectoryAccess() {
             try {
                 if (!('showDirectoryPicker' in window)) {
                     showToast("Your browser does not support the File System Access API. Please use Chrome or Edge.", "error");
@@ -397,7 +397,7 @@
             }
         }
 
-        //        function openApiModal() {
+        function openApiModal() {
             const modal = document.getElementById('api-modal');
             const content = document.getElementById('api-modal-content');
             
@@ -435,7 +435,7 @@
             input.type = input.type === 'password' ? 'text' : 'password';
         }
 
-        //        async function refreshModels() {
+        async function refreshModels() {
             const provider = document.getElementById('api-provider').value;
             const apiKey = document.getElementById('api-key').value.trim();
             if (!apiKey) {
@@ -537,7 +537,7 @@
             closeApiModal();
         }
 
-        //        async function getFileContentForAI(fileHandle) {
+        async function getFileContentForAI(fileHandle) {
             try {
                 const file = await fileHandle.getFile();
                 if (file.size > 15000000) {
@@ -573,7 +573,7 @@
             }
         }
 
-        //        async function callLLM(model, systemInstruction, parts, jsonSchema = null) {
+        async function callLLM(model, systemInstruction, parts, jsonSchema = null) {
             const apiKey = localStorage.getItem('nexus_api_key');
             if (!apiKey) throw new Error("API Key missing");
             
@@ -619,7 +619,7 @@
             }
         }
 
-        //        function setOrganizerProgress(pct, text) {
+        function setOrganizerProgress(pct, text) {
             document.getElementById('organizer-dynamic-ui').classList.remove('hidden');
             document.getElementById('organizer-status-fallback').classList.add('hidden');
             
@@ -632,7 +632,7 @@
             if (statusText && text) statusText.innerText = text;
         }
 
-        //        async function runActualAnalysis() {
+        async function runActualAnalysis() {
             if (!rootDirectoryHandle) { showToast("Please link a Target Node first.", "warning"); return; }
             if (!localStorage.getItem('nexus_primary_model')) { showToast("Please configure AI Settings first.", "error"); openApiModal(); return; }
 
@@ -698,7 +698,7 @@
             }
         }
 
-        //        function renderCategoryApproval(categories) {
+        function renderCategoryApproval(categories) {
             setOrganizerProgress(40, "Awaiting User Authorization");
             const listEl = document.getElementById('category-checkbox-list');
             listEl.innerHTML = '';
@@ -717,7 +717,7 @@
             document.getElementById('category-approval-section').scrollIntoView({ behavior: 'smooth', block: 'end' });
         }
 
-        //        async function recalibrateCategories() {
+        async function recalibrateCategories() {
             const checkboxes = document.querySelectorAll('#category-checkbox-list input[type="checkbox"]');
             const rejected = Array.from(checkboxes).filter(cb => !cb.checked).map(cb => cb.value);
             
@@ -734,7 +734,7 @@
             hintInput.value = originalHint;
         }
 
-        //        async function approveCategoriesAndSort() {
+        async function approveCategoriesAndSort() {
             const checkboxes = document.querySelectorAll('#category-checkbox-list input[type="checkbox"]');
             globalApprovedCategories = Array.from(checkboxes).filter(cb => cb.checked).map(cb => cb.value);
             
@@ -751,7 +751,7 @@
             const threshold = parseInt(document.getElementById('confidence-threshold').value) || 90;
             
             // Relaxed prompt handling for gibberish and binary files
-            const sysPrompt = `You are a file classifier. Select the closest conceptual match from this exact array: ${JSON.stringify(globalApprovedCategories)}. If text contains binary garbage (like ), ignore it and guess based on filename. Only use "Uncategorized" if absolutely impossible to guess.`;
+            const sysPrompt = `You are a file classifier. Select the closest conceptual match from this exact array: ${JSON.stringify(globalApprovedCategories)}. If text contains binary garbage, ignore it and guess based on filename. Only use "Uncategorized" if absolutely impossible to guess.`;
             const schema = { 
                 type: "OBJECT", 
                 properties: { category: { type: "STRING" }, confidence: { type: "INTEGER" } }, 
@@ -815,7 +815,7 @@
             showToast("Protocol Complete", "success");
         }
 
-        //        let globalDuplicateSets = [];
+        let globalDuplicateSets = [];
 
         function formatBytes(bytes) {
             if (bytes === 0) return '0 B';
@@ -838,7 +838,7 @@
             if (statusText && text) statusText.innerText = text;
         }
 
-        //        async function runActualDeduplication() {
+        async function runActualDeduplication() {
             if (!rootDirectoryHandle) { showToast("Please link a Sector first.", "warning"); return; }
 
             const btn = document.getElementById('btn-init-dedupe');
@@ -961,7 +961,7 @@
             }
         }
 
-        //        function renderDuplicateResults() {
+        function renderDuplicateResults() {
             const statusEl = document.getElementById('dedupe-status');
             
             let totalWastedSpace = 0;
@@ -1012,7 +1012,7 @@
             statusEl.innerHTML = html;
         }
 
-        //        function requestDeleteConfirmation() {
+        function requestDeleteConfirmation() {
             const checkboxes = document.querySelectorAll('input[id^="dupe-"]');
             let count = 0;
             checkboxes.forEach(cb => { if (cb.checked) count++; });
