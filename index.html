@@ -322,7 +322,6 @@
             settingsDiv.style.pointerEvents = isChecked ? "auto" : "none";
         }
 
-        // --- STREAMING_CHUNK:Building Dynamic API Loader... ---
         async function refreshModels() {
             const provider = document.getElementById('api-provider').value;
             const key = document.getElementById('api-key').value.trim();
@@ -343,8 +342,10 @@
                     if (!res.ok) throw new Error(`Gemini API Error: ${res.status} ${res.statusText}`);
                     const data = await res.json();
                     
+                    // CRITICAL FIX: Only include models that actually have the 'gemini' naming architecture 
+                    // and actively support the 'generateContent' method. This filters out interaction-only models.
                     availableModels = data.models
-                        .filter(m => m.supportedGenerationMethods && m.supportedGenerationMethods.includes('generateContent'))
+                        .filter(m => m.supportedGenerationMethods && m.supportedGenerationMethods.includes('generateContent') && m.name.toLowerCase().includes('gemini'))
                         .map(m => ({ id: m.name.replace('models/', ''), name: m.displayName || m.name.replace('models/', '') }));
                 } 
                 else if (provider === 'openai') {
@@ -371,7 +372,7 @@
                     populateModelDropdown(provider);
                     statusEl.innerHTML = `<span class="text-[#4ade80] font-bold">Success! Loaded ${availableModels.length} models.</span>`;
                 } else {
-                    statusEl.innerHTML = `<span class="text-warning">Key valid, but no models found.</span>`;
+                    statusEl.innerHTML = `<span class="text-warning">Key valid, but no compatible models found.</span>`;
                 }
 
             } catch (err) {
@@ -431,7 +432,6 @@
                 });
 
                 if (models.length > 0) {
-                    // Try to load user's previous selection if it still exists
                     const savedBase = localStorage.getItem('nexus_base_model');
                     const savedFallback = localStorage.getItem('nexus_fallback_model');
                     
@@ -468,8 +468,6 @@
             }
         }
 
-        // --- STREAMING_CHUNK:Building Multimodal Binary Parser... ---
-        // Helper to convert Files to Base64 for Multimodal LLM ingestion
         async function fileToBase64(file) {
             return new Promise((resolve, reject) => {
                 const reader = new FileReader();
@@ -494,7 +492,6 @@
             return map[ext] || null;
         }
 
-        // --- STREAMING_CHUNK:Updating Universal LLM Translator for Multimodal... ---
         async function callLLM(partsArray, systemInstruction, modelName, requireJsonArray = false, requireJsonObject = false) {
             const provider = localStorage.getItem('nexus_api_provider') || 'gemini';
             const apiKey = localStorage.getItem('nexus_api_key');
@@ -529,7 +526,6 @@
                 return JSON.parse(data.candidates[0].content.parts[0].text);
 
             } else {
-                // OpenAI/Claude Fallback: Extract only the text parts as they require complex formatting for images/files via API
                 let promptString = partsArray.filter(p => p.text).map(p => p.text).join('\n');
                 
                 if (provider === 'openai') {
@@ -572,7 +568,6 @@
             }
         }
 
-        // --- STREAMING_CHUNK:Implementing Multimodal Classification Loop... ---
         async function runActualAnalysis() {
             if (!rootDirectoryHandle) { showToast("Please link a Local Node first.", "warning"); return; }
             if (isProcessing) return;
@@ -632,7 +627,6 @@
                             const text = await file.slice(0, 1000).text();
                             sampleParts.push({ text: `\nSnippet:\n${text.substring(0, 500)}\n` });
                         } else if (mime && file.size < 4000000 && multimodalAdded < 5) {
-                            // Only append full binary base64 for the first 5 files in the sample to keep initial payload reasonable
                             const b64 = await fileToBase64(file);
                             sampleParts.push({ inlineData: { mimeType: mime, data: b64 } });
                             multimodalAdded++;
@@ -651,7 +645,6 @@
                                     ? (localStorage.getItem('nexus_fallback_model') || document.getElementById('fallback-model-select').value)
                                     : baseModel;
 
-                // --- The Regeneration Loop ---
                 while (approvedCategories.length === 0) {
                     updateStatus(`Querying AI Oracle (${genModel}) for optimal clusters...`);
                     
@@ -664,7 +657,6 @@
                     
                     const proposedCategories = await callLLM(sampleParts, sysPrompt, genModel, true, false);
 
-                    // Render interactive checklist UI
                     const decision = await new Promise((resolve) => {
                         let checkboxesHTML = proposedCategories.map((cat, idx) => `
                             <div class="flex items-center gap-3 bg-[#2D2D2D] px-4 py-3 rounded-md border border-gray-600 w-full shadow-sm hover:border-brand transition">
@@ -697,14 +689,13 @@
                         isProcessing = false; initBtn.disabled = false; initBtn.classList.remove('opacity-50', 'cursor-not-allowed'); return;
                     } else if (decision.action === 'regenerate') {
                         if(decision.unchecked.length > 0) rejectedCategories.push(...decision.unchecked);
-                        sampleParts.pop(); // Remove the last instructional prompt so we can append a fresh one next loop
+                        sampleParts.pop(); 
                     } else if (decision.action === 'approve') {
                         if (decision.checked.length === 0) { showToast("Please authorize at least one category.", "warning"); continue; }
                         approvedCategories = decision.checked;
                     }
                 }
 
-                // --- Streaming File Processing Phase ---
                 const useFallback = document.getElementById('fallback-check').checked;
                 const threshold = parseInt(document.getElementById('threshold-input').value) || 90;
                 const fallbackModel = localStorage.getItem('nexus_fallback_model') || document.getElementById('fallback-model-select').value;
@@ -724,7 +715,7 @@
                         const file = await f.handle.getFile();
                         if (isText && file.size < 2000000) {
                             fileParts.push({ text: `Snippet:\n${await file.slice(0, 1500).text()}` });
-                        } else if (mime && file.size < 4000000) { // Limit inline base64 to 4MB per file during processing loop
+                        } else if (mime && file.size < 4000000) { 
                             const b64 = await fileToBase64(file);
                             fileParts.push({ inlineData: { mimeType: mime, data: b64 } });
                         } else {
@@ -736,12 +727,10 @@
 
                     fileParts.push({ text: `Classify this file. Filename: "${f.handle.name}"` });
 
-                    // Initial Base Evaluation
                     let baseResult = await callLLM(fileParts, sysPromptClassify, baseModel, false, true);
                     let finalCategory = baseResult.category;
                     let finalConfidence = parseInt(baseResult.confidence) || 0;
 
-                    // Escalation Engine
                     if (useFallback && finalConfidence <= threshold) {
                         updateStatus(`Escalating file ${processed} to Deep Analysis (${fallbackModel})...<br><span class="text-brand text-sm">${f.handle.name}</span>`);
                         try {
@@ -750,12 +739,10 @@
                         } catch(e) { console.warn("Fallback failed, using base result."); }
                     }
 
-                    // Strict validation
                     const lowerCategories = approvedCategories.map(c => c.toLowerCase());
                     const matchIndex = lowerCategories.indexOf(finalCategory.toLowerCase());
                     finalCategory = (matchIndex !== -1) ? approvedCategories[matchIndex] : "Uncategorized";
 
-                    // Move File
                     const targetDirHandle = await rootDirectoryHandle.getDirectoryHandle(finalCategory, { create: true });
                     try {
                         if (f.handle.move) {
@@ -784,7 +771,6 @@
             }
         }
 
-        // --- DUPLICATE SIMULATION ---
         function simulateScan() {
             if (!rootDirectoryHandle) { showToast("Please link a Local Sector first.", "warning"); return; }
             const isLocal = document.getElementById('local-process-check').checked;
@@ -797,7 +783,6 @@
             `;
         }
 
-        // --- API MODAL & SETTINGS LOGIC ---
         const instructions = {
             gemini: `
                 <ol class="list-decimal pl-4 space-y-1">
@@ -838,7 +823,6 @@
             document.getElementById('api-key').value = localStorage.getItem('nexus_api_key') || '';
             document.getElementById('proxy-url').value = localStorage.getItem('nexus_proxy_url') || '';
             
-            // Re-populate dropdowns if models were previously fetched
             populateModelDropdown(document.getElementById('api-provider').value);
 
             modal.classList.remove('hidden');
