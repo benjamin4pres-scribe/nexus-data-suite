@@ -766,6 +766,57 @@
             }
         }
 
+        async function streamLLM(model, systemInstruction, parts, onChunk) {
+            const apiKey = localStorage.getItem('nexus_api_key');
+            if (!apiKey) throw new Error("API Key missing");
+
+            const payload = {
+                contents: [{ parts: parts }],
+                systemInstruction: { parts: [{ text: systemInstruction }] },
+                generationConfig: {}
+            };
+
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:streamGenerateContent?alt=sse&key=${apiKey}`;
+            const response = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+
+            if (!response.ok) {
+                const errData = await response.json().catch(()=>({}));
+                throw new Error(errData.error?.message || `HTTP ${response.status}`);
+            }
+
+            const reader = response.body.getReader();
+            const decoder = new TextDecoder("utf-8");
+            let fullText = "";
+            let buffer = "";
+
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
+
+                buffer += decoder.decode(value, { stream: true });
+                const lines = buffer.split('\n');
+                buffer = lines.pop(); // Keep the last incomplete line in the buffer
+
+                for (const line of lines) {
+                    if (line.startsWith('data: ')) {
+                        const dataStr = line.substring(6).trim();
+                        if (dataStr === '[DONE]') continue;
+                        try {
+                            const data = JSON.parse(dataStr);
+                            if (data.candidates && data.candidates[0].content && data.candidates[0].content.parts) {
+                                const textPart = data.candidates[0].content.parts[0].text || "";
+                                fullText += textPart;
+                                onChunk(fullText); // Send the accumulated text to the UI
+                            }
+                        } catch (e) {
+                            // Safely ignore partial JSON streams
+                        }
+                    }
+                }
+            }
+            return fullText;
+        }
+
         function setOrganizerProgress(pct, text) {
             document.getElementById('organizer-dynamic-ui').classList.remove('hidden');
             document.getElementById('organizer-status-fallback').classList.add('hidden');
@@ -1369,23 +1420,33 @@
             
             document.getElementById('ascii-dynamic-ui').classList.remove('hidden');
             document.getElementById('ascii-status').classList.add('hidden');
-            document.getElementById('ascii-result').classList.add('hidden');
-            document.getElementById('copy-ascii-btn').classList.add('hidden');
+            
+            // Show the result container immediately so we can watch it stream
+            const resultEl = document.getElementById('ascii-result');
+            resultEl.textContent = "";
+            resultEl.classList.remove('hidden');
+            
+            document.getElementById('copy-ascii-group').classList.add('hidden');
+            document.getElementById('copy-ascii-group').classList.remove('flex');
 
             try {
                 const sysPrompt = "You are a master ASCII art generator. Your sole purpose is to convert natural language prompts into high-quality, complex ASCII art. Use standard ASCII characters. Ensure the art is well-proportioned and meant to be viewed in a monospaced font. DO NOT wrap the output in markdown code blocks (like ```). DO NOT provide any explanation, preamble, or postscript. ONLY output the raw ASCII characters.";
                 const parts = [{ text: `Generate ASCII art for the following prompt: ${prompt}` }];
                 
-                // Using the fallback model as requested, as it typically handles complex reasoning/formatting better
-                const resultText = await callLLM(fallbackModel, sysPrompt, parts);
+                const onChunk = (accumulatedText) => {
+                    // Dynamically strip out markdown fences if the LLM ignores instructions while streaming
+                    let cleanText = accumulatedText.replace(/^```[\s\S]*?\n/, '').replace(/```$/, '');
+                    resultEl.textContent = cleanText;
+                    // Auto-scroll to keep the bottom of the art visible as it generates
+                    resultEl.scrollTop = resultEl.scrollHeight;
+                };
+
+                // Use the new streaming function instead of the static callLLM
+                const resultText = await streamLLM(fallbackModel, sysPrompt, parts, onChunk);
                 
                 if (resultText) {
-                    // Strip potential markdown blocks if the model ignored instructions
                     currentAsciiArt = resultText.replace(/^```[\s\S]*?\n/, '').replace(/```$/, '').trim();
-                    
-                    const resultEl = document.getElementById('ascii-result');
                     resultEl.textContent = currentAsciiArt;
-                    resultEl.classList.remove('hidden');
                     document.getElementById('copy-ascii-group').classList.remove('hidden');
                     document.getElementById('copy-ascii-group').classList.add('flex');
                     showToast("Matrix Compilation Complete.", "success");
@@ -1395,6 +1456,7 @@
                 console.error(err);
                 document.getElementById('ascii-status').innerHTML = `<span class='text-danger font-bold'>Synthesis Error: ${err.message}</span>`;
                 document.getElementById('ascii-status').classList.remove('hidden');
+                document.getElementById('ascii-result').classList.add('hidden');
             } finally {
                 document.getElementById('ascii-dynamic-ui').classList.add('hidden');
                 btn.disabled = false;
