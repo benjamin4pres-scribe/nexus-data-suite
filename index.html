@@ -375,10 +375,14 @@
                 <div class="space-y-5">
                     <div>
                         <label class="block text-sm font-semibold text-gray-300 mb-2">AI Provider</label>
-                        <select id="api-provider" class="w-full bg-surface border border-gray-600 text-white rounded-md px-4 py-3 focus:outline-none focus:border-brand appearance-none">
+                        <select id="api-provider" onchange="updateApiInstructions()" class="w-full bg-surface border border-gray-600 text-white rounded-md px-4 py-3 focus:outline-none focus:border-brand appearance-none">
                             <option value="gemini">Google Gemini (Multimodal Native)</option>
                             <option value="openai">OpenAI (GPT Models)</option>
                         </select>
+                        
+                        <div id="instructions-box" class="mt-4 bg-[#1a1a1a] p-4 rounded-md border border-gray-700 text-sm text-gray-300 shadow-inner">
+                            <!-- Populated by JS -->
+                        </div>
                     </div>
 
                     <div>
@@ -446,6 +450,33 @@
         let globalApprovedCategories = [];
         let globalDuplicateSets = [];
         let currentAsciiArt = "";
+
+        const apiInstructions = {
+            gemini: `
+                <strong class="text-white block mb-1">How to get a Gemini API Key:</strong>
+                <ol class="list-decimal pl-4 space-y-1">
+                    <li>Go to <a href="https://aistudio.google.com/app/apikey" target="_blank" class="text-brand hover:underline font-semibold">Google AI Studio</a>.</li>
+                    <li>Sign in with your Google account.</li>
+                    <li>Click the <strong>Create API key</strong> button.</li>
+                    <li>Copy the key and paste it below.</li>
+                </ol>
+            `,
+            openai: `
+                <strong class="text-white block mb-1">How to get an OpenAI API Key:</strong>
+                <ol class="list-decimal pl-4 space-y-1">
+                    <li>Go to the <a href="https://platform.openai.com/api-keys" target="_blank" class="text-brand hover:underline font-semibold">OpenAI Dashboard</a>.</li>
+                    <li>Sign in and ensure you have prepaid billing credits.</li>
+                    <li>Click <strong>Create new secret key</strong>.</li>
+                    <li>Copy the key and paste it below.</li>
+                </ol>
+            `
+        };
+
+        function updateApiInstructions() {
+            const provider = document.getElementById('api-provider').value;
+            const box = document.getElementById('instructions-box');
+            if (box) box.innerHTML = apiInstructions[provider];
+        }
 
         function switchTab(tabId) {
             document.getElementById('tab-organizer').classList.add('hidden');
@@ -535,6 +566,8 @@
             
             document.getElementById('api-provider').value = localStorage.getItem('nexus_api_provider') || 'gemini';
             document.getElementById('api-key').value = localStorage.getItem('nexus_api_key') || '';
+            
+            updateApiInstructions(); // Initialize instructions on open
             
             const savedPrimary = localStorage.getItem('nexus_primary_model');
             const savedFallback = localStorage.getItem('nexus_fallback_model');
