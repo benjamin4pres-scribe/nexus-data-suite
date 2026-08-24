@@ -365,7 +365,7 @@
             <div class="bg-card p-6 rounded-xl shadow-lg border border-surface space-y-5">
                 <div class="bg-[#78350f]/30 text-[#F5A623] p-4 rounded-md text-sm border border-[#F5A623]/30 mb-2">
                     <strong class="text-white text-base">Terminal Matrix</strong><br>
-                    Utilizes your heavy-duty Fallback AI model to synthesize pure ASCII art from natural language prompts.
+                    Utilizes your Primary AI model (Fast & Efficient) to rapidly synthesize pure ASCII art from natural language prompts.
                 </div>
 
                 <div class="flex flex-col gap-2">
@@ -1467,8 +1467,8 @@
                 return;
             }
 
-            const fallbackModel = localStorage.getItem('nexus_fallback_model');
-            if (!fallbackModel) {
+            const primaryModel = localStorage.getItem('nexus_primary_model');
+            if (!primaryModel) {
                 showToast("Please configure AI Settings and select models.", "error");
                 openApiModal();
                 return;
@@ -1502,7 +1502,7 @@
                 };
 
                 // Use the new streaming function instead of the static callLLM
-                const resultText = await streamLLM(fallbackModel, sysPrompt, parts, onChunk);
+                const resultText = await streamLLM(primaryModel, sysPrompt, parts, onChunk);
                 
                 if (resultText) {
                     currentAsciiArt = resultText.replace(/^```[\s\S]*?\n/, '').replace(/```$/, '').trim();
