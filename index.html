@@ -331,14 +331,13 @@
             
             <div class="bg-[#121212] p-6 rounded-xl shadow-inner border border-surface min-h-[400px] flex flex-col relative overflow-hidden group">
                 
-                <div id="ascii-dynamic-ui" class="w-full hidden mb-4 z-10 relative bg-[#121212] pb-2">
-                    <div class="flex justify-between text-sm text-[#10b981] mb-2">
-                        <span id="ascii-progress-text">Compiling Matrix...</span>
-                        <span class="animate-pulse">_</span>
-                    </div>
-                    <div class="w-full bg-surface rounded-full h-1.5 overflow-hidden">
-                        <div class="bg-[#10b981] h-1.5 rounded-full w-full animate-pulse"></div>
-                    </div>
+                <div id="ascii-dynamic-ui" class="w-full hidden mb-4 z-10 relative bg-[#121212] pb-2 flex items-center gap-3">
+                    <svg class="animate-spin h-5 w-5 text-[#10b981]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    <span id="ascii-progress-text" class="text-sm font-semibold text-[#10b981]">Synthesizing Matrix...</span>
+                    <span class="animate-pulse text-[#10b981]">_</span>
                 </div>
 
                 <div id="copy-ascii-group" class="hidden absolute top-4 right-4 z-20 flex gap-2">
@@ -794,22 +793,36 @@
                 if (done) break;
 
                 buffer += decoder.decode(value, { stream: true });
-                const lines = buffer.split('\n');
-                buffer = lines.pop(); // Keep the last incomplete line in the buffer
+                
+                // Server-Sent Events (SSE) are strictly delimited by double newlines
+                let events = buffer.split(/\r?\n\r?\n/);
+                buffer = events.pop(); // Keep the last incomplete event chunk in the buffer
 
-                for (const line of lines) {
-                    if (line.startsWith('data: ')) {
-                        const dataStr = line.substring(6).trim();
-                        if (dataStr === '[DONE]') continue;
+                for (const event of events) {
+                    let jsonStr = "";
+                    const lines = event.split(/\r?\n/);
+                    
+                    for (const line of lines) {
+                        if (line.startsWith('data: ')) {
+                            const dataStr = line.substring(6);
+                            if (dataStr.trim() === '[DONE]') return fullText;
+                            jsonStr += dataStr; // Reconstruct the full JSON payload
+                        }
+                    }
+
+                    if (jsonStr.trim()) {
                         try {
-                            const data = JSON.parse(dataStr);
-                            if (data.candidates && data.candidates[0].content && data.candidates[0].content.parts) {
+                            const data = JSON.parse(jsonStr);
+                            if (data.candidates && data.candidates.length > 0 && data.candidates[0].content && data.candidates[0].content.parts) {
                                 const textPart = data.candidates[0].content.parts[0].text || "";
                                 fullText += textPart;
-                                onChunk(fullText); // Send the accumulated text to the UI
+                                onChunk(fullText); // Instantly pipe the new characters to the UI
+                            } else if (data.candidates && data.candidates[0].finishReason && data.candidates[0].finishReason !== 'STOP') {
+                                console.warn("Stream halted by API:", data.candidates[0].finishReason);
                             }
                         } catch (e) {
-                            // Safely ignore partial JSON streams
+                            // Safely ignore partial JSON parse errors caused by malformed chunks
+                            console.error("Stream parse error:", e);
                         }
                     }
                 }
