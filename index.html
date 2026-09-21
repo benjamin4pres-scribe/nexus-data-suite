@@ -1613,7 +1613,12 @@ Rules:
 1. Propose up to ${maxSites} logical Sites (e.g., "Finance", "Operations", "Public").
 2. Within each Site, propose up to ${maxLibs} Document Libraries to break up permissions/topics.
 3. Within each Library, you may propose 1st-level Folders. NEVER create nested sub-folders. Flatten deep structures into root folders or separate libraries.
-4. Provide a brief 1-sentence reasoning for why each library exists.`;
+4. Provide a brief 1-sentence reasoning for why each library exists.
+
+CRITICAL RESTRICTIONS to prevent formatting errors:
+- Keep all names (Sites, Libraries, Folders) EXTREMELY concise (1 to 4 words maximum).
+- DO NOT repeat words endlessly (e.g., never output "Hub Hub Hub").
+- Output realistic, professional, and clean corporate naming conventions.`;
 
                 const fileContext = `Sample Topologies Extracted:\n\nFolders:\n${Array.from(folders).slice(0, 100).join('\n')}\n\nSample Files:\n${fileSamples.join('\n')}`;
                 const parts = [{ text: fileContext }];
@@ -1626,15 +1631,15 @@ Rules:
                             items: {
                                 type: "OBJECT",
                                 properties: {
-                                    siteName: { type: "STRING" },
+                                    siteName: { type: "STRING", description: "A short, professional site name (1-3 words max, no repetition)." },
                                     libraries: {
                                         type: "ARRAY",
                                         items: {
                                             type: "OBJECT",
                                             properties: {
-                                                libraryName: { type: "STRING" },
-                                                reasoning: { type: "STRING" },
-                                                folders: { type: "ARRAY", items: { type: "STRING" } }
+                                                libraryName: { type: "STRING", description: "A concise document library name (1-4 words max)." },
+                                                reasoning: { type: "STRING", description: "One short sentence explaining why this library exists." },
+                                                folders: { type: "ARRAY", items: { type: "STRING", description: "Concise root folder name." } }
                                             }
                                         }
                                     }
