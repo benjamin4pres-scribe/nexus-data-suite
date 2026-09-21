@@ -119,7 +119,7 @@
         #btn-deduplicator.active { border-bottom-color: #0d9488; }
         #btn-recovery.active { border-bottom-color: #8b5cf6; }
         #btn-ascii.active { border-bottom-color: #F5A623; }
-
+        #btn-sharepoint.active { border-bottom-color: #3b82f6; }
         /* Toast Notifications */
         #toast-container { position: fixed; bottom: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; pointer-events: none; }
         .toast { padding: 12px 20px; border-radius: 8px; font-weight: 500; color: white; opacity: 0; transform: translateY(20px); transition: all 0.3s ease; box-shadow: 0 4px 6px rgba(0,0,0,0.3); pointer-events: auto; }
@@ -158,6 +158,7 @@
         <button onclick="switchTab('deduplicator')" id="btn-deduplicator" class="tab-btn flex-1 py-3 text-center font-bold text-gray-300 hover:text-white hover:bg-surface border-r border-surface">Duplicate Finder</button>
         <button onclick="switchTab('recovery')" id="btn-recovery" class="tab-btn flex-1 py-3 text-center font-bold text-gray-300 hover:text-white hover:bg-surface border-r border-surface">Echo Recovery</button>
         <button onclick="switchTab('ascii')" id="btn-ascii" class="tab-btn flex-1 py-3 text-center font-bold text-gray-300 hover:text-white hover:bg-surface border-r border-surface">ASCII Synthesizer</button>
+        <button onclick="switchTab('sharepoint')" id="btn-sharepoint" class="tab-btn flex-1 py-3 text-center font-bold text-gray-300 hover:text-white hover:bg-surface border-r border-surface">SP Architect</button>
     </nav>
 
     <main class="flex-grow p-6 md:p-10 max-w-6xl mx-auto w-full">
@@ -406,6 +407,63 @@
             </div>
         </section>
 
+        <!-- SHAREPOINT ARCHITECT TAB -->
+        <section id="tab-sharepoint" class="hidden space-y-6">
+            <h2 class="sr-only">SharePoint Migration Architecture Planner</h2>
+
+            <div class="bg-card p-6 rounded-xl shadow-lg border border-surface space-y-5">
+                <div class="bg-[#1e3a8a]/30 text-[#3b82f6] p-4 rounded-md text-sm border border-[#3b82f6]/30 mb-2">
+                    <strong class="text-white text-base">Wide & Shallow Migration Protocol</strong><br>
+                    SharePoint breaks when folder structures are too deep. This tool scans your chaotic local nested folders and uses AI to map them into a flat, modern SharePoint blueprint: <strong>Sites &rarr; Document Libraries &rarr; 1st-Level Folders</strong>.
+                </div>
+
+                <div class="flex flex-col md:flex-row gap-4 items-center">
+                    <label class="text-[#3b82f6] font-semibold md:w-1/4">Legacy Node (Local File Share)</label>
+                    <div class="flex-grow flex gap-2 w-full">
+                        <input type="text" id="sharepoint-dir-display" readonly placeholder="No legacy drive linked..." class="flex-grow bg-surface border border-gray-600 text-textMain rounded-md px-4 py-2 focus:outline-none cursor-not-allowed opacity-70">
+                        <button onclick="requestSharePointDirectoryAccess()" class="bg-surface hover:bg-[#3A3A3A] border border-gray-600 px-6 py-2 rounded-md font-bold transition whitespace-nowrap">Link Legacy Drive</button>
+                    </div>
+                </div>
+
+                <div class="flex flex-col md:flex-row gap-4 items-center">
+                    <label for="sp-site-limit" class="text-[#3b82f6] font-semibold md:w-1/4">Target Strategy</label>
+                    <div class="flex gap-4">
+                        <div class="flex items-center gap-2">
+                            <span class="text-gray-300 text-sm">Max Sites:</span>
+                            <input type="number" id="sp-site-limit" value="3" min="1" max="10" class="w-16 bg-surface border border-gray-600 text-textMain rounded-md px-2 py-1 focus:outline-none focus:border-[#3b82f6]">
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="text-gray-300 text-sm">Max Libraries per Site:</span>
+                            <input type="number" id="sp-library-limit" value="5" min="1" max="15" class="w-16 bg-surface border border-gray-600 text-textMain rounded-md px-2 py-1 focus:outline-none focus:border-[#3b82f6]">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <button onclick="generateSharePointBlueprint()" id="btn-init-sharepoint" class="w-full bg-[#3b82f6] hover:bg-[#2563eb] text-white px-8 py-3 rounded-md font-bold text-lg transition shadow-lg">Generate Architectural Blueprint</button>
+            
+            <div class="bg-card p-6 rounded-xl shadow-lg border border-surface min-h-[400px] flex flex-col relative">
+                
+                <div id="sharepoint-dynamic-ui" class="w-full hidden mb-6">
+                    <div class="flex justify-between text-sm text-textMuted mb-2">
+                        <span id="sharepoint-progress-text">Scanning Legacy Tree...</span>
+                        <span id="sharepoint-progress-pct">0%</span>
+                    </div>
+                    <div class="w-full bg-surface rounded-full h-2.5 overflow-hidden border border-gray-600">
+                        <div id="sharepoint-progress-bar" class="bg-[#3b82f6] h-2.5 rounded-full transition-all duration-300" style="width: 0%"></div>
+                    </div>
+                </div>
+
+                <div id="sharepoint-status-fallback" class="text-textMuted text-center flex-grow flex items-center justify-center">
+                    Blueprint engine offline. Link a legacy drive to begin.
+                </div>
+
+                <div id="sharepoint-blueprint-container" class="hidden w-full flex-grow space-y-6">
+                    <!-- Tree visually injected here -->
+                </div>
+            </div>
+        </section>
+
     </main>
 
     <!-- AI Setup Modal -->
@@ -497,6 +555,7 @@
         let dedupeDirectoryHandle = null;
         let recoverySourceHandle = null;
         let recoveryDestHandle = null;
+        let sharepointDirectoryHandle = null;
 
         let globalFilesToClassify = [];
         let globalApprovedCategories = [];
@@ -548,11 +607,13 @@
             document.getElementById('tab-deduplicator').classList.add('hidden');
             document.getElementById('tab-recovery').classList.add('hidden');
             document.getElementById('tab-ascii').classList.add('hidden');
+            document.getElementById('tab-sharepoint').classList.add('hidden');
             
             document.getElementById('btn-organizer').classList.remove('active');
             document.getElementById('btn-deduplicator').classList.remove('active');
             document.getElementById('btn-recovery').classList.remove('active');
             document.getElementById('btn-ascii').classList.remove('active');
+            document.getElementById('btn-sharepoint').classList.remove('active');
 
             document.getElementById(`tab-${tabId}`).classList.remove('hidden');
             document.getElementById(`btn-${tabId}`).classList.add('active');
@@ -625,113 +686,14 @@
             }
         }
 
-        function openApiModal() {
-            const modal = document.getElementById('api-modal');
-            const content = document.getElementById('api-modal-content');
-            
-            document.getElementById('api-provider').value = localStorage.getItem('nexus_api_provider') || 'gemini';
-            document.getElementById('api-key').value = localStorage.getItem('nexus_api_key') || '';
-            
-            updateApiInstructions(); // Initialize instructions on open
-            
-            const savedPrimary = localStorage.getItem('nexus_primary_model');
-            const savedFallback = localStorage.getItem('nexus_fallback_model');
-            
-            if(savedPrimary) document.getElementById('primary-model-select').innerHTML = `<option value="${savedPrimary}">${savedPrimary} (Saved)</option>`;
-            if(savedFallback) document.getElementById('fallback-model-select').innerHTML = `<option value="${savedFallback}">${savedFallback} (Saved)</option>`;
-
-            modal.classList.remove('hidden');
-            void modal.offsetWidth;
-            modal.classList.remove('opacity-0');
-            content.classList.remove('scale-95');
-        }
-
-        function closeApiModal() {
-            const modal = document.getElementById('api-modal');
-            const content = document.getElementById('api-modal-content');
-            modal.classList.add('opacity-0');
-            content.classList.add('scale-95');
-            setTimeout(() => { modal.classList.add('hidden'); }, 300);
-        }
-
-        function togglePassword() {
-            const input = document.getElementById('api-key');
-            input.type = input.type === 'password' ? 'text' : 'password';
-        }
-
-        async function refreshModels() {
-            const provider = document.getElementById('api-provider').value;
-            const apiKey = document.getElementById('api-key').value.trim();
-            if (!apiKey) { showToast("Enter an API key to fetch models.", "warning"); return; }
-
-            const primarySelect = document.getElementById('primary-model-select');
-            const fallbackSelect = document.getElementById('fallback-model-select');
-            primarySelect.innerHTML = `<option>Fetching...</option>`;
-            fallbackSelect.innerHTML = `<option>Fetching...</option>`;
-
+        async function requestSharePointDirectoryAccess() {
             try {
-                let models = [];
-                if (provider === 'gemini') {
-                    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`);
-                    if (!res.ok) {
-                        const errData = await res.json().catch(()=>({}));
-                        throw new Error(errData.error?.message || "Invalid Google API Key or Network Error");
-                    }
-                    const data = await res.json();
-                    
-                    models = data.models
-                        .filter(m => m.supportedGenerationMethods && m.supportedGenerationMethods.includes("generateContent"))
-                        .filter(m => m.name.includes("gemini"))
-                        .map(m => m.name.replace('models/', ''));
-                        
-                } else if (provider === 'openai') {
-                    const res = await fetch(`https://api.openai.com/v1/models`, {
-                        headers: { 'Authorization': `Bearer ${apiKey}` }
-                    });
-                    if (!res.ok) throw new Error("Invalid OpenAI API Key");
-                    const data = await res.json();
-                    models = data.data.map(m => m.id).filter(id => id.includes("gpt"));
-                }
-
-                if (models.length === 0) throw new Error("No compatible models found for this key.");
-
-                let bestPrimary = models[0];
-                let bestFallback = models[0];
-                let maxPrimaryScore = -1;
-                let maxFallbackScore = -1;
-
-                models.forEach(m => {
-                    const name = m.toLowerCase();
-                    let pScore = 0;
-                    let fScore = 0;
-                    
-                    const versionMatch = name.match(/[\d.]+/);
-                    const versionNum = versionMatch ? parseFloat(versionMatch[0]) : 0;
-                    
-                    pScore += versionNum * 10;
-                    fScore += versionNum * 10;
-
-                    if (name.includes('flash') || name.includes('mini') || name.includes('haiku')) {
-                        pScore += 50; fScore -= 20; 
-                    }
-                    if (name.includes('pro') || name.includes('opus') || name.includes('gpt-4') || name.includes('gpt-5')) {
-                        fScore += 50; pScore -= 20; 
-                    }
-                    if (name.includes('vision')) { pScore += 10; fScore += 10; }
-
-                    if (pScore > maxPrimaryScore) { maxPrimaryScore = pScore; bestPrimary = m; }
-                    if (fScore > maxFallbackScore) { maxFallbackScore = fScore; bestFallback = m; }
-                });
-
-                primarySelect.innerHTML = models.map(m => `<option value="${m}" ${m === bestPrimary ? 'selected' : ''}>${m}</option>`).join('');
-                fallbackSelect.innerHTML = models.map(m => `<option value="${m}" ${m === bestFallback ? 'selected' : ''}>${m}</option>`).join('');
-                
-                showToast(`Successfully fetched ${models.length} models!`, "success");
-
+                if (!('showDirectoryPicker' in window)) throw new Error("Browser unsupported.");
+                sharepointDirectoryHandle = await window.showDirectoryPicker({ mode: 'read' });
+                document.getElementById('sharepoint-dir-display').value = `🔗 Legacy Node: ${sharepointDirectoryHandle.name}`;
+                showToast(`Linked Legacy Drive: ${sharepointDirectoryHandle.name}`, "success");
             } catch (err) {
-                primarySelect.innerHTML = `<option value="">Error fetching models</option>`;
-                fallbackSelect.innerHTML = `<option value="">Error fetching models</option>`;
-                showToast(err.message, "error");
+                if (err.name !== 'AbortError') showToast(`Error accessing directory: ${err.message}`, "error");
             }
         }
 
@@ -1588,6 +1550,195 @@
                 showToast("Failed to copy. Please manually select and copy.", "error");
             }
             document.body.removeChild(textArea);
+        }
+
+        function setSharePointProgress(pct, text) {
+            document.getElementById('sharepoint-dynamic-ui').classList.remove('hidden');
+            document.getElementById('sharepoint-status-fallback').classList.add('hidden');
+            document.getElementById('sharepoint-blueprint-container').classList.add('hidden');
+            const bar = document.getElementById('sharepoint-progress-bar');
+            const pctText = document.getElementById('sharepoint-progress-pct');
+            const statusText = document.getElementById('sharepoint-progress-text');
+            if (bar) bar.style.width = `${Math.min(100, Math.max(0, pct))}%`;
+            if (pctText) pctText.innerText = `${Math.round(pct)}%`;
+            if (statusText && text) statusText.innerText = text;
+        }
+
+        async function generateSharePointBlueprint() {
+            if (!sharepointDirectoryHandle) { showToast("Please link a Legacy Drive first.", "warning"); return; }
+            const primaryModel = localStorage.getItem('nexus_primary_model');
+            if (!primaryModel) { showToast("Please configure AI Settings first.", "error"); openApiModal(); return; }
+
+            const btn = document.getElementById('btn-init-sharepoint');
+            btn.disabled = true;
+            btn.classList.add('opacity-50');
+
+            try {
+                setSharePointProgress(10, "Scraping deep directory topologies...");
+                
+                // Sample the directory structure (avoid crashing on massive drives)
+                let folders = new Set();
+                let fileSamples = [];
+                let dirCount = 0;
+
+                async function walkStructure(dirHandle, path = '', depth = 0) {
+                    if (depth > 4 || dirCount > 300) return; // Prevent excessive deep crawling context bloat
+                    for await (const entry of dirHandle.values()) {
+                        if (entry.kind === 'directory' && !entry.name.startsWith('.')) {
+                            const newPath = path + entry.name + '/';
+                            folders.add(newPath);
+                            dirCount++;
+                            await walkStructure(entry, newPath, depth + 1);
+                        } else if (entry.kind === 'file' && !entry.name.startsWith('.') && fileSamples.length < 150) {
+                            fileSamples.push(path + entry.name);
+                        }
+                    }
+                }
+                
+                await walkStructure(sharepointDirectoryHandle, '/');
+                
+                if (folders.size === 0 && fileSamples.length === 0) {
+                    setSharePointProgress(100, "Node is empty.");
+                    throw new Error("No files or folders found to map.");
+                }
+
+                setSharePointProgress(40, "Drafting Wide & Shallow Architecture via AI...");
+                
+                const maxSites = document.getElementById('sp-site-limit').value || 3;
+                const maxLibs = document.getElementById('sp-library-limit').value || 5;
+
+                const sysPrompt = `You are an Enterprise SharePoint Information Architect. The user is migrating a deeply nested, chaotic legacy file share to Microsoft SharePoint. 
+SharePoint strictly requires a "Wide and Shallow" architecture to prevent permission bloat and URL length limits.
+Rules:
+1. Propose up to ${maxSites} logical Sites (e.g., "Finance", "Operations", "Public").
+2. Within each Site, propose up to ${maxLibs} Document Libraries to break up permissions/topics.
+3. Within each Library, you may propose 1st-level Folders. NEVER create nested sub-folders. Flatten deep structures into root folders or separate libraries.
+4. Provide a brief 1-sentence reasoning for why each library exists.`;
+
+                const fileContext = `Sample Topologies Extracted:\n\nFolders:\n${Array.from(folders).slice(0, 100).join('\n')}\n\nSample Files:\n${fileSamples.join('\n')}`;
+                const parts = [{ text: fileContext }];
+
+                const jsonSchema = {
+                    type: "OBJECT",
+                    properties: {
+                        sites: {
+                            type: "ARRAY",
+                            items: {
+                                type: "OBJECT",
+                                properties: {
+                                    siteName: { type: "STRING" },
+                                    libraries: {
+                                        type: "ARRAY",
+                                        items: {
+                                            type: "OBJECT",
+                                            properties: {
+                                                libraryName: { type: "STRING" },
+                                                reasoning: { type: "STRING" },
+                                                folders: { type: "ARRAY", items: { type: "STRING" } }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                };
+
+                setSharePointProgress(60, "Awaiting AI Architect response...");
+                const responseText = await callLLM(primaryModel, sysPrompt, parts, jsonSchema);
+                const blueprint = JSON.parse(responseText);
+
+                setSharePointProgress(90, "Rendering visual blueprint...");
+                renderSharePointBlueprint(blueprint);
+                
+                document.getElementById('sharepoint-dynamic-ui').classList.add('hidden');
+                document.getElementById('sharepoint-blueprint-container').classList.remove('hidden');
+                showToast("Blueprint Generated Successfully!", "success");
+
+            } catch (err) {
+                console.error(err);
+                document.getElementById('sharepoint-status-fallback').innerHTML = `<span class='text-danger font-bold'>Architecture Error: ${err.message}</span>`;
+                document.getElementById('sharepoint-dynamic-ui').classList.add('hidden');
+                document.getElementById('sharepoint-status-fallback').classList.remove('hidden');
+            } finally {
+                btn.disabled = false;
+                btn.classList.remove('opacity-50');
+            }
+        }
+
+        function renderSharePointBlueprint(blueprint) {
+            const container = document.getElementById('sharepoint-blueprint-container');
+            let html = `<div class="flex justify-between items-end mb-4 border-b border-gray-600 pb-2">
+                            <h3 class="text-xl font-bold text-white">Proposed Cloud Architecture</h3>
+                            <span class="bg-[#3b82f6]/20 text-[#3b82f6] px-3 py-1 rounded text-xs font-bold uppercase tracking-wider border border-[#3b82f6]/30">Wide & Shallow Compliant</span>
+                        </div>`;
+
+            if (!blueprint.sites || blueprint.sites.length === 0) {
+                container.innerHTML = html + `<p class="text-textMuted">No logical structure could be deduced.</p>`;
+                return;
+            }
+
+            blueprint.sites.forEach(site => {
+                html += `
+                    <div class="bg-[#1a1a1a] p-5 rounded-lg border border-gray-700 shadow-sm relative overflow-hidden">
+                        <!-- Site Header -->
+                        <div class="flex items-center gap-3 mb-4">
+                            <div class="bg-[#3b82f6] p-2 rounded-md shadow-md">
+                                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
+                            </div>
+                            <h4 class="text-2xl font-bold text-[#3b82f6]">Site: ${site.siteName}</h4>
+                        </div>
+                        
+                        <!-- Libraries -->
+                        <div class="space-y-4 ml-4 pl-4 border-l-2 border-gray-600">
+                `;
+
+                if (site.libraries && site.libraries.length > 0) {
+                    site.libraries.forEach(lib => {
+                        html += `
+                            <div class="relative">
+                                <!-- Horizontal branch line -->
+                                <div class="absolute -left-4 top-4 w-4 border-t-2 border-gray-600"></div>
+                                
+                                <div class="bg-surface p-4 rounded-md border border-gray-700">
+                                    <div class="flex items-center gap-2 mb-1">
+                                        <svg class="w-5 h-5 text-[#4ade80]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2"></path></svg>
+                                        <h5 class="text-lg font-semibold text-[#4ade80]">Library: ${lib.libraryName}</h5>
+                                    </div>
+                                    <p class="text-xs text-textMuted italic mb-3">"${lib.reasoning || 'General document storage.'}"</p>
+                                    
+                                    <!-- Folders -->
+                                    <div class="flex flex-wrap gap-2 ml-1">
+                        `;
+                        
+                        if (lib.folders && lib.folders.length > 0) {
+                            lib.folders.forEach(folder => {
+                                html += `<span class="bg-[#2D2D2D] hover:bg-[#3A3A3A] transition text-gray-200 px-3 py-1.5 rounded text-sm flex items-center gap-1.5 shadow-sm border border-gray-700 cursor-default">
+                                            <svg class="w-4 h-4 text-amber-400" fill="currentColor" viewBox="0 0 20 20"><path d="M2 6a2 2 0 012-2h5l2 2h5a2 2 0 012 2v6a2 2 0 01-2 2H4a2 2 0 01-2-2V6z"></path></svg>
+                                            ${folder}
+                                         </span>`;
+                            });
+                        } else {
+                            html += `<span class="text-xs text-gray-500">No root folders needed. Flat storage.</span>`;
+                        }
+
+                        html += `
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    });
+                } else {
+                     html += `<p class="text-textMuted">No document libraries proposed.</p>`;
+                }
+
+                html += `
+                        </div>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
         }
     </script>
 </body>
