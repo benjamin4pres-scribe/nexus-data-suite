@@ -410,7 +410,7 @@
             <div class="bg-card p-6 rounded-xl shadow-lg border border-surface space-y-5">
                 <div class="bg-[#1e3a8a]/30 text-[#3b82f6] p-4 rounded-md text-sm border border-[#3b82f6]/30 mb-2">
                     <strong class="text-white text-base">Wide & Shallow Migration Protocol</strong><br>
-                    SharePoint breaks when folder structures are too deep. This tool scans your chaotic local nested folders and uses AI to map them into a flat, modern SharePoint blueprint: <strong>Sites &rarr; Document Libraries &rarr; 1st-Level Folders</strong>.
+                    SharePoint breaks when folder structures are too deep. This tool performs a full "Eagle-Eye" scan of your chaotic local files and uses AI to map them into a flat, modern SharePoint blueprint: <strong>Sites &rarr; Document Libraries &rarr; 1st-Level Folders</strong>.
                 </div>
 
                 <div class="flex flex-col md:flex-row gap-4 items-center">
@@ -593,29 +593,42 @@
             `
         };
 
-        // --- NEW API MODAL JAVASCRIPT FUNCTIONS ---
         function openApiModal() {
-            const modal = document.getElementById('api-modal');
-            const content = document.getElementById('api-modal-content');
-            
-            // Populate existing settings
-            document.getElementById('api-provider').value = localStorage.getItem('nexus_api_provider') || 'gemini';
-            document.getElementById('api-key').value = localStorage.getItem('nexus_api_key') || '';
-            updateApiInstructions();
-            
-            // Populate models if they were previously saved
-            const savedPrimary = localStorage.getItem('nexus_primary_model');
-            const savedFallback = localStorage.getItem('nexus_fallback_model');
-            if (savedPrimary) {
-                document.getElementById('primary-model-select').innerHTML = `<option value="${savedPrimary}">${savedPrimary}</option>`;
-                document.getElementById('fallback-model-select').innerHTML = `<option value="${savedFallback}">${savedFallback}</option>`;
+            try {
+                const modal = document.getElementById('api-modal');
+                const content = document.getElementById('api-modal-content');
+                
+                // Populate existing settings safely
+                if (window.localStorage) {
+                    try {
+                        document.getElementById('api-provider').value = localStorage.getItem('nexus_api_provider') || 'gemini';
+                        document.getElementById('api-key').value = localStorage.getItem('nexus_api_key') || '';
+                        
+                        const savedPrimary = localStorage.getItem('nexus_primary_model');
+                        const savedFallback = localStorage.getItem('nexus_fallback_model');
+                        if (savedPrimary) {
+                            document.getElementById('primary-model-select').innerHTML = `<option value="${savedPrimary}">${savedPrimary}</option>`;
+                            document.getElementById('fallback-model-select').innerHTML = `<option value="${savedFallback}">${savedFallback}</option>`;
+                        }
+                    } catch (storageErr) {
+                        console.warn("Storage access restricted.", storageErr);
+                    }
+                }
+                
+                updateApiInstructions();
+                
+                modal.classList.remove('hidden');
+                
+                // Use a safer timeout for the animation class toggle
+                setTimeout(() => {
+                    modal.classList.remove('opacity-0');
+                    content.classList.remove('scale-95');
+                }, 50); // Increased timeout slightly for older mobile browsers
+            } catch (e) {
+                console.error("Error opening API Modal:", e);
+                // Fallback: force open if animations fail
+                document.getElementById('api-modal').classList.remove('hidden', 'opacity-0');
             }
-            
-            modal.classList.remove('hidden');
-            // Force a reflow to make the CSS transition work properly
-            void modal.offsetWidth;
-            modal.classList.remove('opacity-0');
-            content.classList.remove('scale-95');
         }
 
         function closeApiModal() {
@@ -625,7 +638,6 @@
             modal.classList.add('opacity-0');
             content.classList.add('scale-95');
             
-            // Wait for the CSS transition to finish before hiding it from the DOM
             setTimeout(() => {
                 modal.classList.add('hidden');
             }, 300);
@@ -649,8 +661,6 @@
             fallbackSelect.innerHTML = '';
 
             let models = [];
-            // In a full production app you might fetch these dynamically via the provider API.
-            // For stability and simplicity in the browser tool, we provide standard known models.
             if (provider === 'gemini' || provider === 'oauth') {
                 models = [
                     { id: 'gemini-3.7-flash', name: 'Gemini 3.7 Flash (Fast & Efficient)' },
@@ -670,15 +680,13 @@
                 fallbackSelect.innerHTML += `<option value="${model.id}">${model.name}</option>`;
             });
 
-            // Set sensible defaults based on the provider
             if (models.length > 0) {
-                primarySelect.value = models[0].id; // Usually Flash / Mini
-                fallbackSelect.value = models.length > 1 ? models[1].id : models[0].id; // Usually Pro / Standard
+                primarySelect.value = models[0].id; 
+                fallbackSelect.value = models.length > 1 ? models[1].id : models[0].id; 
             }
             
             showToast("Model list updated successfully.", "success");
         }
-        // --- END NEW API MODAL JAVASCRIPT FUNCTIONS ---
 
         function updateApiInstructions() {
             const provider = document.getElementById('api-provider').value;
@@ -790,12 +798,15 @@
             if (!key) { showToast("API key is required.", "error"); return; }
             if (!primary || !fallback) { showToast("Please fetch and select models.", "error"); return; }
 
-            localStorage.setItem('nexus_api_provider', provider);
-            localStorage.setItem('nexus_api_key', key);
-            localStorage.setItem('nexus_primary_model', primary);
-            localStorage.setItem('nexus_fallback_model', fallback);
-
-            showToast("AI Configuration saved securely.", "success");
+            try {
+                localStorage.setItem('nexus_api_provider', provider);
+                localStorage.setItem('nexus_api_key', key);
+                localStorage.setItem('nexus_primary_model', primary);
+                localStorage.setItem('nexus_fallback_model', fallback);
+                showToast("AI Configuration saved securely.", "success");
+            } catch (e) {
+                showToast("Failed to save settings to browser storage.", "error");
+            }
             closeApiModal();
         }
 
@@ -1545,7 +1556,6 @@
                     resultEl.scrollTop = resultEl.scrollHeight;
                 };
 
-                // Use the new streaming function instead of the static callLLM
                 const resultText = await streamLLM(primaryModel, sysPrompt, parts, onChunk);
                 
                 if (resultText) {
@@ -1656,56 +1666,90 @@
             btn.classList.add('opacity-50');
 
             try {
-                setSharePointProgress(10, "Scraping deep directory topologies...");
+                setSharePointProgress(5, "Initiating Deep Drive Scan...");
                 
-                let folders = new Set();
-                let allFiles = [];
-                let dirCount = 0;
+                let directoryStats = {};
+                let totalFilesScanned = 0;
+                let totalFoldersScanned = 0;
 
-                async function walkStructure(dirHandle, path = '', depth = 0) {
-                    if (depth > 4 || dirCount > 300) return; 
+                async function walkStructure(dirHandle, path = '/') {
                     for await (const entry of dirHandle.values()) {
                         if (entry.kind === 'directory' && !entry.name.startsWith('.')) {
+                            totalFoldersScanned++;
                             const newPath = path + entry.name + '/';
-                            folders.add(newPath);
-                            dirCount++;
-                            await walkStructure(entry, newPath, depth + 1);
+                            directoryStats[newPath] = { count: 0, exts: new Set() };
+                            // Add a safety yield for massive directories to keep UI responsive
+                            if (totalFoldersScanned % 50 === 0) await new Promise(r => setTimeout(r, 0));
+                            await walkStructure(entry, newPath);
                         } else if (entry.kind === 'file' && !entry.name.startsWith('.')) {
-                            allFiles.push(path + entry.name);
+                            totalFilesScanned++;
+                            if (!directoryStats[path]) directoryStats[path] = { count: 0, exts: new Set() };
+                            directoryStats[path].count++;
+                            
+                            const parts = entry.name.split('.');
+                            if (parts.length > 1) {
+                                const ext = parts.pop().toLowerCase();
+                                directoryStats[path].exts.add(ext);
+                            }
+
+                            if (totalFilesScanned % 500 === 0) {
+                                setSharePointProgress(25, `Mapping Topology: ${totalFilesScanned} files scanned...`);
+                            }
                         }
                     }
                 }
                 
+                directoryStats['/'] = { count: 0, exts: new Set() };
                 await walkStructure(sharepointDirectoryHandle, '/');
-                
-                // Shuffle the collected files so the AI sees a diverse cross-section
-                let fileSamples = allFiles.sort(() => 0.5 - Math.random()).slice(0, 150);
 
-                if (folders.size === 0 && fileSamples.length === 0) {
+                if (totalFilesScanned === 0 && totalFoldersScanned === 0) {
                     setSharePointProgress(100, "Node is empty.");
                     throw new Error("No files or folders found to map.");
                 }
 
-                setSharePointProgress(40, "Drafting Wide & Shallow Architecture via AI...");
+                setSharePointProgress(50, "Compressing topology for AI analysis...");
+                
+                // Condense the massive file tree into a lightweight map for the AI
+                let mapLines = [];
+                for (const [path, stats] of Object.entries(directoryStats)) {
+                    if (stats.count > 0 || path === '/') {
+                         const exts = Array.from(stats.exts).slice(0, 6).join(', '); // Top extensions
+                         mapLines.push(`[Dir] ${path} -> ${stats.count} files (Types: ${exts || 'misc'})`);
+                    }
+                }
+
+                // Sort alphabetically to give the AI a clean hierarchical view
+                mapLines.sort();
+
+                let fileContext = `COMPLETE LEGACY TOPOLOGY SCANNED:\nTotal Files: ${totalFilesScanned}\nTotal Folders: ${totalFoldersScanned}\n\nDirectory Map:\n`;
+                
+                // Safety net: Cap the payload at ~3000 folders to avoid overwhelming the prompt or browser memory,
+                // while still giving the AI vastly more context than the old 150 file limit.
+                fileContext += mapLines.slice(0, 3000).join('\n');
+                if (mapLines.length > 3000) {
+                    fileContext += `\n... (And ${mapLines.length - 3000} more nested directories omitted for bandwidth)`;
+                }
+
+                setSharePointProgress(65, "Drafting Wide & Shallow Architecture via AI...");
                 
                 const maxSites = document.getElementById('sp-site-limit').value || 3;
                 const maxLibs = document.getElementById('sp-library-limit').value || 5;
 
                 const sysPrompt = `You are an Enterprise SharePoint Information Architect migrating a chaotic file share to a modern SharePoint environment.
-Analyze the provided sample of folders and files, which represent diverse topics from across the drive.
+Analyze the provided complete directory map, which summarizes every folder and file on the drive.
 
 Your goal is to organize these into a "Wide and Shallow" architecture:
-1. Group related topics into ${maxSites} logical Sites. (Ensure you generate diverse sites covering the breadth of the files).
-2. Inside each Site, generate 2 to ${maxLibs} Document Libraries. YOU MUST PROVIDE LIBRARIES.
-3. Inside each Library, generate 1st-level root folders if necessary to group specific items.
+1. Group related topics into ${maxSites} distinct, logical Site Collections.
+2. Inside each Site Collection, generate 2 to ${maxLibs} specific Document Libraries. You MUST generate multiple libraries to partition content effectively.
+3. Inside each Library, generate 1st-level root folders if necessary to group specific items (Max 2-3 levels deep is best practice).
 
-CRITICAL RESTRICTIONS:
-- NEVER output conversational text or internal monologues inside the names (e.g., NEVER output "alternative: XYZ"). The name fields MUST contain ONLY the final professional name.
-- Max 1-4 words per name. Clean, corporate, and direct.
-- DO NOT repeat the same word endlessly.
+CRITICAL RESTRICTIONS (DO NOT VIOLATE):
+- NEVER output conversational text, internal reasoning, or alternative options inside the name fields (e.g., NEVER output "HubHub alternative: Armor Fabrication").
+- The name fields MUST contain ONLY the final, clean, corporate name (e.g., "Armor Fabrication").
+- Max 1-4 words per name.
+- DO NOT repeat the same word endlessly (e.g., "Hub Hub Hub").
 - The JSON response MUST strictly follow the provided schema format.`;
 
-                const fileContext = `Sample Topologies Extracted:\n\nFolders:\n${Array.from(folders).slice(0, 100).join('\n')}\n\nSample Files:\n${fileSamples.join('\n')}`;
                 const parts = [{ text: fileContext }];
 
                 const jsonSchema = {
@@ -1713,18 +1757,24 @@ CRITICAL RESTRICTIONS:
                     properties: {
                         sites: {
                             type: "ARRAY",
+                            description: "An array of independent SharePoint Site Collections.",
                             items: {
                                 type: "OBJECT",
                                 properties: {
-                                    siteName: { type: "STRING", description: "A short, professional site name (1-3 words max)." },
+                                    siteName: { type: "STRING", description: "A clean, professional site name without alternative suggestions (1-3 words max)." },
                                     libraries: {
                                         type: "ARRAY",
+                                        description: "A mandatory array of document libraries belonging to this site.",
                                         items: {
                                             type: "OBJECT",
                                             properties: {
-                                                libraryName: { type: "STRING", description: "A concise document library name (1-4 words max)." },
-                                                reasoning: { type: "STRING", description: "One short sentence explaining why this library exists." },
-                                                folders: { type: "ARRAY", items: { type: "STRING", description: "Concise root folder name." } }
+                                                libraryName: { type: "STRING", description: "A concise, clean document library name without alternative suggestions (1-4 words max)." },
+                                                reasoning: { type: "STRING", description: "One short sentence explaining the business purpose of this library." },
+                                                folders: { 
+                                                    type: "ARRAY", 
+                                                    description: "An array of 1st-level root folders within this library. Keep folder names clean and short.",
+                                                    items: { type: "STRING" } 
+                                                }
                                             },
                                             required: ["libraryName", "reasoning", "folders"]
                                         }
@@ -1737,12 +1787,12 @@ CRITICAL RESTRICTIONS:
                     required: ["sites"]
                 };
 
-                setSharePointProgress(60, "Awaiting AI Architect response...");
+                setSharePointProgress(80, "Awaiting AI Architect response...");
                 const responseText = await callLLM(primaryModel, sysPrompt, parts, jsonSchema);
                 const blueprint = JSON.parse(responseText);
 
-                setSharePointProgress(90, "Rendering visual blueprint...");
-                renderSharePointBlueprint(blueprint);
+                setSharePointProgress(95, "Rendering visual blueprint...");
+                renderSharePointBlueprint(blueprint, totalFilesScanned);
                 
                 document.getElementById('sharepoint-dynamic-ui').classList.add('hidden');
                 document.getElementById('sharepoint-blueprint-container').classList.remove('hidden');
@@ -1759,11 +1809,14 @@ CRITICAL RESTRICTIONS:
             }
         }
 
-        function renderSharePointBlueprint(blueprint) {
+        function renderSharePointBlueprint(blueprint, totalFilesScanned) {
             const container = document.getElementById('sharepoint-blueprint-container');
-            let html = `<div class="flex justify-between items-end mb-4 border-b border-gray-600 pb-2">
-                            <h3 class="text-xl font-bold text-white">Proposed Cloud Architecture</h3>
-                            <span class="bg-[#3b82f6]/20 text-[#3b82f6] px-3 py-1 rounded text-xs font-bold uppercase tracking-wider border border-[#3b82f6]/30">Wide & Shallow Compliant</span>
+            let html = `<div class="flex flex-col sm:flex-row justify-between sm:items-end mb-4 border-b border-gray-600 pb-3 gap-2">
+                            <div>
+                                <h3 class="text-xl font-bold text-white">Proposed Cloud Architecture</h3>
+                                <p class="text-xs text-textMuted mt-1">Based on an Eagle-Eye scan of ${totalFilesScanned.toLocaleString()} local files.</p>
+                            </div>
+                            <span class="bg-[#3b82f6]/20 text-[#3b82f6] px-3 py-1 rounded text-xs font-bold uppercase tracking-wider border border-[#3b82f6]/30 self-start sm:self-auto">Wide & Shallow Compliant</span>
                         </div>`;
 
             if (!blueprint.sites || blueprint.sites.length === 0) {
