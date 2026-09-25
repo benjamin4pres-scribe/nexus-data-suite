@@ -426,11 +426,11 @@
                     <div class="flex gap-4">
                         <div class="flex items-center gap-2">
                             <span class="text-gray-300 text-sm">Max Sites:</span>
-                            <input type="number" id="sp-site-limit" value="3" min="1" max="10" class="w-16 bg-surface border border-gray-600 text-textMain rounded-md px-2 py-1 focus:outline-none focus:border-[#3b82f6]">
+                            <input type="number" id="sp-site-limit" value="3" min="1" max="20" class="w-16 bg-surface border border-gray-600 text-textMain rounded-md px-2 py-1 focus:outline-none focus:border-[#3b82f6]">
                         </div>
                         <div class="flex items-center gap-2">
                             <span class="text-gray-300 text-sm">Max Libraries per Site:</span>
-                            <input type="number" id="sp-library-limit" value="5" min="1" max="15" class="w-16 bg-surface border border-gray-600 text-textMain rounded-md px-2 py-1 focus:outline-none focus:border-[#3b82f6]">
+                            <input type="number" id="sp-library-limit" value="5" min="1" max="25" class="w-16 bg-surface border border-gray-600 text-textMain rounded-md px-2 py-1 focus:outline-none focus:border-[#3b82f6]">
                         </div>
                     </div>
                 </div>
@@ -1739,11 +1739,12 @@
 Analyze the provided complete directory map, which summarizes every folder and file on the drive.
 
 Your goal is to organize these into a "Wide and Shallow" architecture:
-1. Group related topics into ${maxSites} distinct, logical Site Collections.
-2. Inside each Site Collection, generate 2 to ${maxLibs} specific Document Libraries. You MUST generate multiple libraries to partition content effectively.
+1. Group related topics into distinct, logical Site Collections. You can create UP TO a MAXIMUM of ${maxSites} sites. (Use FEWER if the data does not require it).
+2. Inside each Site Collection, generate specific Document Libraries to partition content. You can create UP TO a MAXIMUM of ${maxLibs} libraries per site. (Use FEWER if the data does not require it).
 3. Inside each Library, generate 1st-level root folders if necessary to group specific items (Max 2-3 levels deep is best practice).
 
 CRITICAL RESTRICTIONS (DO NOT VIOLATE):
+- DO NOT hallucinate or create unnecessary sites/libraries just to reach the maximum limits. Only create what is strictly justified by the Directory Map.
 - NEVER output conversational text, internal reasoning, or alternative options inside the name fields (e.g., NEVER output "HubHub alternative: Armor Fabrication").
 - The name fields MUST contain ONLY the final, clean, corporate name (e.g., "Armor Fabrication").
 - Max 1-4 words per name.
